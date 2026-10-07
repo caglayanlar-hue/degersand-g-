@@ -16,16 +16,14 @@ import {
   RotateCcw,
   Sparkles,
   FileDown,
-  Printer,
   CheckCircle2,
   AlertCircle,
   HelpCircle,
   ArrowRight,
   Compass
 } from 'lucide-react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { CaesarWheelModal } from './components/CaesarWheelModal';
+import { generateAndDownloadCalendarPdf } from './utils/calendarPdfGenerator';
 
 // 12 Months 2027 Values & Wisdom with Vivid Multi-Color Themes
 interface MonthData {
@@ -401,6 +399,7 @@ export default function App() {
   const [showCaesarWheel, setShowCaesarWheel] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
+  const [pdfDownloadSuccess, setPdfDownloadSuccess] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const lock3Input1Ref = useRef<HTMLInputElement>(null);
@@ -680,71 +679,21 @@ export default function App() {
     }
   };
 
-  // Direct Browser A4 Print (Strict Single Page)
-  const handlePrint = () => {
-    sfx.playKey();
-    window.print();
-  };
-
-  // Single-Page Vertical (Portrait) PDF Export via html2canvas & jsPDF
+  // Single-Page Vertical (Portrait) PDF Export - Direct, Pure Canvas 2D + jsPDF
   const handleDownloadPdf = async () => {
     sfx.playKey();
-    const element = calendarPrintRef.current;
-    if (!element) return;
-
     setIsGeneratingPdf(true);
+    setPdfDownloadSuccess(false);
 
     try {
-      // High-resolution canvas capture with full styling preserved
-      const canvas = await html2canvas(element, {
-        scale: 2.4,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#0a0f1d'
-      });
-
-      // Strict single-page A4 Portrait (Dikey) PDF
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        compress: true
-      });
-
-      const pageWidth = 210; // A4 portrait width in mm
-      const pageHeight = 297; // A4 portrait height in mm
-      const margin = 5; // 5mm clean margin
-      const maxWidth = pageWidth - margin * 2; // 200mm
-      const maxHeight = pageHeight - margin * 2; // 287mm
-
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      const canvasRatio = canvasWidth / canvasHeight;
-
-      // Fit strictly within 1 single A4 portrait page
-      let renderWidth = maxWidth;
-      let renderHeight = renderWidth / canvasRatio;
-
-      if (renderHeight > maxHeight) {
-        renderHeight = maxHeight;
-        renderWidth = renderHeight * canvasRatio;
-      }
-
-      // Centered on the single vertical A4 page
-      const posX = (pageWidth - renderWidth) / 2;
-      const posY = (pageHeight - renderHeight) / 2;
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.96);
-      pdf.addImage(imgData, 'JPEG', posX, posY, renderWidth, renderHeight, undefined, 'FAST');
-
-      const cleanName = studentName.trim()
-        ? studentName.trim().replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ_ ]/g, '').replace(/\s+/g, '_')
-        : 'Kisisel';
-
-      pdf.save(`2027_Tek_Sayfa_Degerler_Takvimi_${cleanName}.pdf`);
+      await generateAndDownloadCalendarPdf(studentName, MONTHS_2027);
+      setPdfDownloadSuccess(true);
+      sfx.playUnlock();
+      setTimeout(() => {
+        setPdfDownloadSuccess(false);
+      }, 7000);
     } catch (err) {
       console.error('PDF indirme hatası:', err);
-      window.print();
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -1573,25 +1522,16 @@ export default function App() {
                 <button
                   onClick={handleDownloadPdf}
                   disabled={isGeneratingPdf}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-orange-500/30 hover:scale-[1.03] active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-orange-500/30 hover:scale-[1.03] active:scale-[0.98] transition-all flex items-center gap-2.5 cursor-pointer disabled:opacity-60 border border-yellow-200"
                   title="2027 Takvimini A4 tek sayfa PDF olarak indir"
                 >
                   <FileDown className="w-4 h-4 stroke-[2.5]" />
-                  <span>{isGeneratingPdf ? '⏳ PDF Hazırlanıyor...' : '📥 Tek Sayfa PDF İndir'}</span>
-                </button>
-
-                <button
-                  onClick={handlePrint}
-                  className="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs sm:text-sm transition-all flex items-center gap-1.5 cursor-pointer shadow-lg shadow-cyan-600/30"
-                  title="Yazıcıdan A4 tek sayfaya çıktı al"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>🖨️ A4 Yazdır (Tek Sayfa)</span>
+                  <span>{isGeneratingPdf ? '⏳ PDF Hazırlanıyor ve İndiriliyor...' : '📥 2027 Takvimini PDF Olarak İndir'}</span>
                 </button>
 
                 <button
                   onClick={restartGame}
-                  className="px-3.5 py-2.5 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border-2 border-indigo-800/80 font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-3 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border-2 border-indigo-800/80 font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer"
                   title="Oyunu baştan başlat"
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -1599,6 +1539,21 @@ export default function App() {
                 </button>
               </div>
             </div>
+
+            {/* PDF Download Success Banner */}
+            {pdfDownloadSuccess && (
+              <div className="w-full max-w-4xl mb-4 bg-emerald-950/95 border-2 border-emerald-400 text-emerald-100 px-4 py-3 rounded-2xl flex items-center justify-between gap-3 shadow-2xl animate-lock-pop no-print">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span className="text-xs sm:text-sm font-black">
+                    🎉 2027 Değerler Takvimi (Tek Sayfa A4 PDF) başarıyla indirildi!
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-emerald-300 bg-emerald-900/60 px-2.5 py-1 rounded-lg border border-emerald-500/40 shrink-0 hidden sm:inline-block">
+                  İndirilenler klasörünüzü kontrol ediniz
+                </span>
+              </div>
+            )}
 
             {/* Personalized Celebration Card on Screen (Excluded from print/download) */}
             {studentName.trim() && (
