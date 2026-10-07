@@ -16,6 +16,7 @@ import {
   RotateCcw,
   Sparkles,
   FileDown,
+  Printer,
   CheckCircle2,
   AlertCircle,
   HelpCircle,
@@ -77,10 +78,10 @@ const MONTHS_2027: MonthData[] = [
   {
     index: 3,
     month: 'Mart 2027',
-    value: 'Saygı',
-    quote: 'Yaratılanı hoş gör, Yaradan’dan ötürü. Büyüklere hürmet, küçüklere şefkat.',
+    value: 'Saygı, Sevgi ve Merhamet',
+    quote: 'Yaratılanı hoş gör, Yaradan’dan ötürü. Gönüller sevgi ve merhametle birleşir, saygıyla yücelir.',
     author: 'Yunus Emre',
-    guideline: 'Farklılıklara hürmet edip nezaket ve sevgi diliyle yaklaşmak.',
+    guideline: 'Farklılıklara saygı duymak, her canlıya derin sevgi ve merhametle yaklaşmak.',
     cardBg: 'bg-gradient-to-br from-[#0369a1] via-[#075985] to-[#082f49]',
     borderColor: 'border-sky-400/90 hover:border-white',
     badgeBg: 'bg-sky-500/40',
@@ -342,6 +343,39 @@ function normalizeTurkish(input: string): string {
     .replace(/\s+/g, ' ');
 }
 
+// 29-Letter Turkish Alphabet with 1-based indexing
+const TURKISH_ALPHABET_DATA = [
+  { char: 'A', num: 1 },
+  { char: 'B', num: 2 },
+  { char: 'C', num: 3 },
+  { char: 'Ç', num: 4 },
+  { char: 'D', num: 5 },
+  { char: 'E', num: 6 },
+  { char: 'F', num: 7 },
+  { char: 'G', num: 8 },
+  { char: 'Ğ', num: 9 },
+  { char: 'H', num: 10 },
+  { char: 'I', num: 11 },
+  { char: 'İ', num: 12 },
+  { char: 'J', num: 13 },
+  { char: 'K', num: 14 },
+  { char: 'L', num: 15 },
+  { char: 'M', num: 16 },
+  { char: 'N', num: 17 },
+  { char: 'O', num: 18 },
+  { char: 'Ö', num: 19 },
+  { char: 'P', num: 20 },
+  { char: 'R', num: 21 },
+  { char: 'S', num: 22 },
+  { char: 'Ş', num: 23 },
+  { char: 'T', num: 24 },
+  { char: 'U', num: 25 },
+  { char: 'Ü', num: 26 },
+  { char: 'V', num: 27 },
+  { char: 'Y', num: 28 },
+  { char: 'Z', num: 29 },
+];
+
 type StageType = 'intro' | 'lock1' | 'lock2' | 'lock3' | 'lock4' | 'lock5' | 'final';
 
 export default function App() {
@@ -349,6 +383,14 @@ export default function App() {
   const [locks, setLocks] = useState<boolean[]>([false, false, false, false, false]);
   const [studentName, setStudentName] = useState<string>('');
   const [inputValue, setInputValue] = useState<string>('');
+  
+  // 3. Kilit Çoklu Değer & Alan Durumları: Saygı, Sevgi, Merhamet
+  const [lock3Val1, setLock3Val1] = useState<string>('');
+  const [lock3Val2, setLock3Val2] = useState<string>('');
+  const [lock3Val3, setLock3Val3] = useState<string>('');
+  const [activeLock3Field, setActiveLock3Field] = useState<1 | 2 | 3>(1);
+  const [showAlphabetTable, setShowAlphabetTable] = useState<boolean>(true);
+
   const [feedback, setFeedback] = useState<{ type: 'idle' | 'success' | 'error'; message: string }>({
     type: 'idle',
     message: ''
@@ -361,6 +403,9 @@ export default function App() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const lock3Input1Ref = useRef<HTMLInputElement>(null);
+  const lock3Input2Ref = useRef<HTMLInputElement>(null);
+  const lock3Input3Ref = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number | null>(null);
   const calendarPrintRef = useRef<HTMLDivElement>(null);
@@ -460,20 +505,59 @@ export default function App() {
 
   const handleVirtualKey = (char: string) => {
     sfx.playKey();
-    setInputValue((prev) => prev + char);
-    inputRef.current?.focus();
+    if (stage === 'lock3') {
+      if (activeLock3Field === 1) {
+        setLock3Val1((prev) => (prev + char).slice(0, 10));
+        lock3Input1Ref.current?.focus();
+      } else if (activeLock3Field === 2) {
+        setLock3Val2((prev) => (prev + char).slice(0, 10));
+        lock3Input2Ref.current?.focus();
+      } else {
+        setLock3Val3((prev) => (prev + char).slice(0, 12));
+        lock3Input3Ref.current?.focus();
+      }
+    } else {
+      setInputValue((prev) => prev + char);
+      inputRef.current?.focus();
+    }
   };
 
   const handleVirtualBackspace = () => {
     sfx.playKey();
-    setInputValue((prev) => prev.slice(0, -1));
-    inputRef.current?.focus();
+    if (stage === 'lock3') {
+      if (activeLock3Field === 1) {
+        setLock3Val1((prev) => prev.slice(0, -1));
+        lock3Input1Ref.current?.focus();
+      } else if (activeLock3Field === 2) {
+        setLock3Val2((prev) => prev.slice(0, -1));
+        lock3Input2Ref.current?.focus();
+      } else {
+        setLock3Val3((prev) => prev.slice(0, -1));
+        lock3Input3Ref.current?.focus();
+      }
+    } else {
+      setInputValue((prev) => prev.slice(0, -1));
+      inputRef.current?.focus();
+    }
   };
 
   const handleVirtualClear = () => {
     sfx.playKey();
-    setInputValue('');
-    inputRef.current?.focus();
+    if (stage === 'lock3') {
+      if (activeLock3Field === 1) {
+        setLock3Val1('');
+        lock3Input1Ref.current?.focus();
+      } else if (activeLock3Field === 2) {
+        setLock3Val2('');
+        lock3Input2Ref.current?.focus();
+      } else {
+        setLock3Val3('');
+        lock3Input3Ref.current?.focus();
+      }
+    } else {
+      setInputValue('');
+      inputRef.current?.focus();
+    }
   };
 
   const restartGame = () => {
@@ -481,6 +565,10 @@ export default function App() {
     setStage('intro');
     setLocks([false, false, false, false, false]);
     setInputValue('');
+    setLock3Val1('');
+    setLock3Val2('');
+    setLock3Val3('');
+    setActiveLock3Field(1);
     setFeedback({ type: 'idle', message: '' });
   };
 
@@ -523,16 +611,44 @@ export default function App() {
         setTimeout(() => setIsShaking(false), 500);
       }
     } else if (stage === 'lock3') {
-      // 3. Kilit: Karakter Değiştirme -> SAYGI
-      if (normalized === 'SAYGI') {
+      // 3. Kilit: Numaralı Harf Değiştirme (A=1 ... Z=29) -> SAYGI, SEVGİ, MERHAMET
+      const v1 = normalizeTurkish(lock3Val1);
+      const v2 = normalizeTurkish(lock3Val2);
+      const v3 = normalizeTurkish(lock3Val3);
+      const vMain = normalized;
+
+      const isV1Correct = v1 === 'SAYGI';
+      const isV2Correct = v2 === 'SEVGİ' || v2 === 'SEVGI';
+      const isV3Correct = v3 === 'MERHAMET';
+
+      // Tek kutudan giriş de desteklenir: örn: "SAYGI SEVGİ MERHAMET" veya "SAYGI, SEVGİ, MERHAMET"
+      const mainHasSaygi = vMain.includes('SAYGI');
+      const mainHasSevgi = vMain.includes('SEVGİ') || vMain.includes('SEVGI');
+      const mainHasMerhamet = vMain.includes('MERHAMET');
+      const isMainComboCorrect = mainHasSaygi && mainHasSevgi && mainHasMerhamet;
+
+      if ((isV1Correct && isV2Correct && isV3Correct) || isMainComboCorrect) {
         sfx.playUnlock();
         setLocks([locks[0], locks[1], true, locks[3], locks[4]]);
-        setFeedback({ type: 'success', message: 'Mükemmel! 3. Kilit Açıldı: Saygı' });
-        setTimeout(() => setStage('lock4'), 1200);
+        setFeedback({ type: 'success', message: 'Mükemmel! 3. Kilit Açıldı: Saygı, Sevgi ve Merhamet' });
+        setTimeout(() => {
+          setInputValue('');
+          setStage('lock4');
+        }, 1200);
       } else {
         sfx.playError();
         setIsShaking(true);
-        setFeedback({ type: 'error', message: 'Hatalı değer! Sesli harf kuralını uygulayarak tekrar dene.' });
+        let errorMsg = 'Hatalı değer(ler)! Lütfen alfabe tablosundaki numaralara göre harfleri kontrol edin.';
+        if (!isV1Correct && isV2Correct && isV3Correct) {
+          errorMsg = '1. Değeri (22-1-28-8-11) tekrar kontrol et!';
+        } else if (isV1Correct && !isV2Correct && isV3Correct) {
+          errorMsg = '2. Değeri (22-6-27-8-12) tekrar kontrol et!';
+        } else if (isV1Correct && isV2Correct && !isV3Correct) {
+          errorMsg = '3. Değeri (16-6-21-10-1-16-6-24) tekrar kontrol et!';
+        } else if (!v1 || !v2 || !v3) {
+          errorMsg = 'Lütfen tablodaki numaraları çözerek her 3 değeri de kutulara yazın.';
+        }
+        setFeedback({ type: 'error', message: errorMsg });
         setTimeout(() => setIsShaking(false), 500);
       }
     } else if (stage === 'lock4') {
@@ -564,6 +680,12 @@ export default function App() {
     }
   };
 
+  // Direct Browser A4 Print (Strict Single Page)
+  const handlePrint = () => {
+    sfx.playKey();
+    window.print();
+  };
+
   // Single-Page Vertical (Portrait) PDF Export via html2canvas & jsPDF
   const handleDownloadPdf = async () => {
     sfx.playKey();
@@ -575,7 +697,7 @@ export default function App() {
     try {
       // High-resolution canvas capture with full styling preserved
       const canvas = await html2canvas(element, {
-        scale: 2.2,
+        scale: 2.4,
         useCORS: true,
         logging: false,
         backgroundColor: '#0a0f1d'
@@ -591,9 +713,9 @@ export default function App() {
 
       const pageWidth = 210; // A4 portrait width in mm
       const pageHeight = 297; // A4 portrait height in mm
-      const margin = 6; // 6mm sleek margin
-      const maxWidth = pageWidth - margin * 2; // 198mm
-      const maxHeight = pageHeight - margin * 2; // 285mm
+      const margin = 5; // 5mm clean margin
+      const maxWidth = pageWidth - margin * 2; // 200mm
+      const maxHeight = pageHeight - margin * 2; // 287mm
 
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
@@ -619,7 +741,7 @@ export default function App() {
         ? studentName.trim().replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ_ ]/g, '').replace(/\s+/g, '_')
         : 'Kisisel';
 
-      pdf.save(`2027_Dikey_Degerler_Takvimi_${cleanName}.pdf`);
+      pdf.save(`2027_Tek_Sayfa_Degerler_Takvimi_${cleanName}.pdf`);
     } catch (err) {
       console.error('PDF indirme hatası:', err);
       window.print();
@@ -745,7 +867,7 @@ export default function App() {
           {[
             { id: 1, label: '1. Sezar', stageKey: 'lock1', val: 'Dürüstlük', unlockedClass: 'bg-rose-500 text-white border-rose-300 shadow-[0_0_15px_#f43f5e]', activeClass: 'bg-rose-600 text-white border-rose-200 shadow-[0_0_20px_#f43f5e]' },
             { id: 2, label: '2. Ters Çevirme', stageKey: 'lock2', val: 'Yardımlaşma', unlockedClass: 'bg-emerald-500 text-white border-emerald-300 shadow-[0_0_15px_#10b981]', activeClass: 'bg-emerald-600 text-white border-emerald-200 shadow-[0_0_20px_#10b981]' },
-            { id: 3, label: '3. Değiştirme', stageKey: 'lock3', val: 'Saygı', unlockedClass: 'bg-cyan-500 text-white border-cyan-300 shadow-[0_0_15px_#06b6d4]', activeClass: 'bg-cyan-600 text-white border-cyan-200 shadow-[0_0_20px_#06b6d4]' },
+            { id: 3, label: '3.3. Değiştirme', stageKey: 'lock3', val: 'Saygı · Sevgi · Merhamet', unlockedClass: 'bg-cyan-500 text-white border-cyan-300 shadow-[0_0_15px_#06b6d4]', activeClass: 'bg-cyan-600 text-white border-cyan-200 shadow-[0_0_20px_#06b6d4]' },
             { id: 4, label: '4. Akrostiş', stageKey: 'lock4', val: 'Vefa', unlockedClass: 'bg-purple-500 text-white border-purple-300 shadow-[0_0_15px_#a855f7]', activeClass: 'bg-purple-600 text-white border-purple-200 shadow-[0_0_20px_#a855f7]' },
             { id: 5, label: '5. Anagram', stageKey: 'lock5', val: 'Sabır', unlockedClass: 'bg-amber-400 text-slate-950 border-amber-200 shadow-[0_0_15px_#f59e0b]', activeClass: 'bg-amber-400 text-slate-950 border-yellow-100 shadow-[0_0_20px_#f59e0b]' }
           ].map((item, idx) => {
@@ -764,7 +886,7 @@ export default function App() {
               >
                 {isUnlocked ? <Unlock className="w-3.5 h-3.5 stroke-[2.5]" /> : <Lock className="w-3.5 h-3.5" />}
                 <span>
-                  {item.id}. {isUnlocked ? item.val : item.label}
+                  {isUnlocked ? `${item.id}. ${item.val}` : item.label}
                 </span>
               </div>
             );
@@ -1058,47 +1180,207 @@ export default function App() {
               </div>
             )}
 
-            {/* -------------------- 3. KİLİT: KARAKTER DEĞİŞTİRME (CYAN THEME) -------------------- */}
+            {/* -------------------- 3. KİLİT: HARF - NUMARA DEĞİŞTİRME (CYAN THEME) -------------------- */}
             {stage === 'lock3' && (
-              <div className="w-full max-w-xl bg-gradient-to-b from-cyan-950/90 via-slate-900/95 to-blue-950/90 border-3 border-cyan-400 rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(6,182,212,0.4)] backdrop-blur-xl">
+              <div className="w-full max-w-3xl bg-gradient-to-b from-cyan-950/95 via-slate-900/95 to-blue-950/95 border-3 border-cyan-400 rounded-3xl p-5 sm:p-7 shadow-[0_25px_60px_rgba(6,182,212,0.4)] backdrop-blur-xl">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs font-black uppercase tracking-wider text-white bg-cyan-600 px-3.5 py-1 rounded-full shadow-md border border-cyan-300">
-                    💎 3. Kilit: Karakter Değiştirme
+                    💎 3. Kilit: 3.3. Değiştirme (3 Değer)
                   </span>
                   <span className="text-xs text-cyan-200 font-black bg-cyan-900/80 px-3 py-1 rounded-lg border border-cyan-400">3 / 5 Kilit</span>
                 </div>
 
-                <div className="bg-cyan-900/70 border-2 border-cyan-400 rounded-2xl p-4 mb-5 text-white text-center font-black text-base sm:text-lg shadow-md">
-                  Sadece sesli harflere odaklan: A=1, E=2, I=3, İ=4, O=5...
+                <div className="bg-cyan-900/70 border-2 border-cyan-400 rounded-2xl p-4 mb-4 text-white text-center font-black text-sm sm:text-base shadow-md">
+                  Türk alfabesindeki harflerin sıra numaralarını (A=1 ... Z=29) kullanarak gizlenmiş 3 kadim değeri bul!
                 </div>
 
-                <div className="bg-slate-950/80 border-2 border-cyan-400 rounded-2xl p-5 text-center mb-5 shadow-inner">
-                  <span className="text-xs font-black text-cyan-300 tracking-widest uppercase block mb-2">
-                    ŞİFRELİ METİN
-                  </span>
-                  <div className="text-3xl sm:text-4xl font-black text-cyan-300 tracking-[0.4em] font-mono drop-shadow-[0_0_15px_rgba(6,182,212,0.9)]">
-                    S1YG3
+                {/* Türk Alfabesi Sıralama ve Numara Tablosu */}
+                <div className="bg-slate-950/90 border-2 border-cyan-400/80 rounded-2xl p-4 mb-5 shadow-inner">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-cyan-800/60">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📖</span>
+                      <span className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider">
+                        Türk Alfabesi Numara Kılavuzu (1 — 29)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAlphabetTable(!showAlphabetTable)}
+                      className="text-[11px] font-black text-amber-300 hover:text-white bg-slate-900 px-2.5 py-1 rounded-lg border border-cyan-700/60 cursor-pointer transition-all"
+                    >
+                      {showAlphabetTable ? 'Tabloyu Gizle ▲' : 'Tabloyu Göster ▼'}
+                    </button>
+                  </div>
+
+                  {showAlphabetTable && (
+                    <>
+                      <div className="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-15 gap-1.5 pt-1">
+                        {TURKISH_ALPHABET_DATA.map((item) => (
+                          <button
+                            key={item.char}
+                            type="button"
+                            onClick={() => {
+                              handleVirtualKey(item.char);
+                            }}
+                            className="flex flex-col items-center justify-center p-1 rounded-xl bg-slate-900/90 hover:bg-cyan-600/90 border border-cyan-500/40 hover:border-cyan-200 active:scale-95 transition-all cursor-pointer group shadow-sm"
+                            title={`${item.char} = ${item.num} (Kutuya eklemek için tıkla)`}
+                          >
+                            <span className="text-sm font-black text-cyan-200 group-hover:text-white font-mono">
+                              {item.char}
+                            </span>
+                            <span className="text-[10px] font-black text-amber-300 group-hover:text-amber-100 bg-slate-950/80 px-1 rounded">
+                              {item.num}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-cyan-200/80 font-bold mt-2.5 text-center">
+                        💡 Numaraların karşılığı olan harfleri tablodan eşleştirin. (Harflere tıklayarak da yazabilirsiniz)
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                {/* 3 Değer Şifreli Kod Kartları */}
+                <div className="space-y-3.5 mb-5">
+                  {/* 1. Değer: SAYGI */}
+                  <div className={`p-4 rounded-2xl border-2 transition-all ${
+                    normalizeTurkish(lock3Val1) === 'SAYGI'
+                      ? 'bg-emerald-950/70 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                      : activeLock3Field === 1
+                      ? 'bg-slate-950/90 border-cyan-300 shadow-md ring-2 ring-cyan-400/40'
+                      : 'bg-slate-950/70 border-cyan-500/50'
+                  }`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-cyan-500 text-slate-950 uppercase tracking-wider">
+                          1. Değer (5 Harf)
+                        </span>
+                        <span className="text-xs text-cyan-300 font-mono font-bold">
+                          Şifreli Kod:
+                        </span>
+                      </div>
+                      {normalizeTurkish(lock3Val1) === 'SAYGI' && (
+                        <span className="text-xs font-black text-emerald-300 bg-emerald-900/80 px-2.5 py-0.5 rounded-full border border-emerald-400 flex items-center gap-1 animate-fadeIn">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Doğru: SAYGI
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-xl sm:text-2xl font-black text-cyan-300 tracking-[0.25em] font-mono text-center my-2 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+                      22 - 1 - 28 - 8 - 11
+                    </div>
+
+                    <input
+                      ref={lock3Input1Ref}
+                      type="text"
+                      value={lock3Val1}
+                      onFocus={() => setActiveLock3Field(1)}
+                      onChange={(e) => setLock3Val1(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          lock3Input2Ref.current?.focus();
+                        }
+                      }}
+                      placeholder="1. Değeri buraya yazın..."
+                      className="w-full bg-slate-900/90 border-2 border-cyan-400/60 focus:border-cyan-300 rounded-xl px-4 py-2.5 text-base sm:text-lg font-black text-center text-white placeholder:text-cyan-400/40 uppercase tracking-widest outline-none transition-all"
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {/* 2. Değer: SEVGİ */}
+                  <div className={`p-4 rounded-2xl border-2 transition-all ${
+                    normalizeTurkish(lock3Val2) === 'SEVGİ' || normalizeTurkish(lock3Val2) === 'SEVGI'
+                      ? 'bg-emerald-950/70 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                      : activeLock3Field === 2
+                      ? 'bg-slate-950/90 border-cyan-300 shadow-md ring-2 ring-cyan-400/40'
+                      : 'bg-slate-950/70 border-cyan-500/50'
+                  }`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-pink-500 text-white uppercase tracking-wider">
+                          2. Değer (5 Harf)
+                        </span>
+                        <span className="text-xs text-pink-300 font-mono font-bold">
+                          Şifreli Kod:
+                        </span>
+                      </div>
+                      {(normalizeTurkish(lock3Val2) === 'SEVGİ' || normalizeTurkish(lock3Val2) === 'SEVGI') && (
+                        <span className="text-xs font-black text-emerald-300 bg-emerald-900/80 px-2.5 py-0.5 rounded-full border border-emerald-400 flex items-center gap-1 animate-fadeIn">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Doğru: SEVGİ
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-xl sm:text-2xl font-black text-pink-300 tracking-[0.25em] font-mono text-center my-2 drop-shadow-[0_0_10px_rgba(244,114,182,0.8)]">
+                      22 - 6 - 27 - 8 - 12
+                    </div>
+
+                    <input
+                      ref={lock3Input2Ref}
+                      type="text"
+                      value={lock3Val2}
+                      onFocus={() => setActiveLock3Field(2)}
+                      onChange={(e) => setLock3Val2(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          lock3Input3Ref.current?.focus();
+                        }
+                      }}
+                      placeholder="2. Değeri buraya yazın..."
+                      className="w-full bg-slate-900/90 border-2 border-pink-400/60 focus:border-pink-300 rounded-xl px-4 py-2.5 text-base sm:text-lg font-black text-center text-white placeholder:text-pink-400/40 uppercase tracking-widest outline-none transition-all"
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {/* 3. Değer: MERHAMET */}
+                  <div className={`p-4 rounded-2xl border-2 transition-all ${
+                    normalizeTurkish(lock3Val3) === 'MERHAMET'
+                      ? 'bg-emerald-950/70 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                      : activeLock3Field === 3
+                      ? 'bg-slate-950/90 border-cyan-300 shadow-md ring-2 ring-cyan-400/40'
+                      : 'bg-slate-950/70 border-cyan-500/50'
+                  }`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 uppercase tracking-wider">
+                          3. Değer (8 Harf)
+                        </span>
+                        <span className="text-xs text-amber-300 font-mono font-bold">
+                          Şifreli Kod:
+                        </span>
+                      </div>
+                      {normalizeTurkish(lock3Val3) === 'MERHAMET' && (
+                        <span className="text-xs font-black text-emerald-300 bg-emerald-900/80 px-2.5 py-0.5 rounded-full border border-emerald-400 flex items-center gap-1 animate-fadeIn">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Doğru: MERHAMET
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-lg sm:text-2xl font-black text-amber-300 tracking-[0.2em] font-mono text-center my-2 drop-shadow-[0_0_10px_rgba(251,191,36,0.8)]">
+                      16 - 6 - 21 - 10 - 1 - 16 - 6 - 24
+                    </div>
+
+                    <input
+                      ref={lock3Input3Ref}
+                      type="text"
+                      value={lock3Val3}
+                      onFocus={() => setActiveLock3Field(3)}
+                      onChange={(e) => setLock3Val3(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleCheckAnswer();
+                        }
+                      }}
+                      placeholder="3. Değeri buraya yazın..."
+                      className="w-full bg-slate-900/90 border-2 border-amber-400/60 focus:border-amber-300 rounded-xl px-4 py-2.5 text-base sm:text-lg font-black text-center text-white placeholder:text-amber-400/40 uppercase tracking-widest outline-none transition-all"
+                      autoComplete="off"
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCheckAnswer()}
-                    placeholder="Değeri yazın..."
-                    className={`w-full bg-slate-950/90 border-3 rounded-2xl px-5 py-4 text-xl sm:text-2xl font-black text-center text-white placeholder:text-cyan-300/40 outline-none uppercase tracking-widest transition-all ${
-                      isShaking
-                        ? 'animate-shake border-rose-500 shadow-[0_0_25px_rgba(244,63,94,0.8)]'
-                        : feedback.type === 'success'
-                        ? 'border-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.7)]'
-                        : 'border-cyan-400 focus:border-cyan-300 focus:shadow-[0_0_25px_rgba(6,182,212,0.6)]'
-                    }`}
-                    autoComplete="off"
-                  />
-
+                {/* Feedback & Action */}
+                <div className="space-y-3">
                   {feedback.message && (
                     <div
                       className={`p-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 ${
@@ -1121,7 +1403,7 @@ export default function App() {
                     className="w-full py-4.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 text-white font-black text-xl shadow-xl shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer border border-cyan-300"
                   >
                     <Unlock className="w-6 h-6 stroke-[2.5]" />
-                    <span>KONTROL ET VE AÇ 🔓</span>
+                    <span>3 DEĞERİ KONTROL ET VE AÇ 🔓</span>
                   </button>
                 </div>
               </div>
@@ -1271,138 +1553,150 @@ export default function App() {
         {stage === 'final' && (
           <div className="w-full flex flex-col items-center animate-lock-pop">
             {/* Top Celebration & PDF Export Header */}
-            <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 pb-4 border-b border-indigo-900/80">
+            <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 pb-3 border-b border-indigo-900/80 no-print">
               <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-xs font-black uppercase text-amber-300 bg-gradient-to-r from-amber-500/25 to-rose-500/25 border border-amber-400/60 px-3 py-1 rounded-full shadow-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-black uppercase text-amber-300 bg-gradient-to-r from-amber-500/25 to-rose-500/25 border border-amber-400/60 px-3 py-0.5 rounded-full shadow-sm">
                     ✨ 5 Kilit Çözüldü • Hazine Açıldı
                   </span>
                   <span className="text-xs text-indigo-300 font-bold bg-indigo-950/80 px-2.5 py-0.5 rounded-lg border border-indigo-800">Yıl 2027</span>
                 </div>
-                <h1 className="text-2xl sm:text-4xl font-black bg-gradient-to-r from-amber-300 via-rose-300 to-cyan-300 bg-clip-text text-transparent tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-amber-300 via-rose-300 to-cyan-300 bg-clip-text text-transparent tracking-tight">
                   2027 Değerler Takvimi
                 </h1>
                 <p className="text-xs sm:text-sm text-indigo-200/90 font-bold">
-                  12 Aya ait erdemler, bilgelik sözleri ve rehber ilkeler.
+                  12 Aya ait kadim erdemler, bilgelik sözleri ve rehber ilkeler.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5 flex-wrap justify-end">
                 <button
                   onClick={handleDownloadPdf}
                   disabled={isGeneratingPdf}
-                  className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-slate-950 font-black text-sm shadow-xl shadow-orange-500/30 hover:scale-[1.03] active:scale-[0.98] transition-all flex items-center gap-2.5 cursor-pointer disabled:opacity-60"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-orange-500/30 hover:scale-[1.03] active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                  title="2027 Takvimini A4 tek sayfa PDF olarak indir"
                 >
-                  <FileDown className="w-5 h-5 stroke-[2.5]" />
-                  <span>{isGeneratingPdf ? '⏳ Tek Sayfa Dikey PDF Hazırlanıyor...' : '📥 Tek Sayfa Dikey PDF İndir'}</span>
+                  <FileDown className="w-4 h-4 stroke-[2.5]" />
+                  <span>{isGeneratingPdf ? '⏳ PDF Hazırlanıyor...' : '📥 Tek Sayfa PDF İndir'}</span>
+                </button>
+
+                <button
+                  onClick={handlePrint}
+                  className="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs sm:text-sm transition-all flex items-center gap-1.5 cursor-pointer shadow-lg shadow-cyan-600/30"
+                  title="Yazıcıdan A4 tek sayfaya çıktı al"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>🖨️ A4 Yazdır (Tek Sayfa)</span>
                 </button>
 
                 <button
                   onClick={restartGame}
-                  className="px-5 py-3.5 rounded-2xl bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border-2 border-indigo-800/80 font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2.5 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border-2 border-indigo-800/80 font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  title="Oyunu baştan başlat"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  <span>Yeniden Oyna</span>
+                  <span>Yeniden</span>
                 </button>
               </div>
             </div>
 
-            {/* 2027 VALUES CALENDAR PRINT AREA (Vertical / Dikey Single-Page Layout) */}
+            {/* Personalized Celebration Card on Screen (Excluded from print/download) */}
+            {studentName.trim() && (
+              <div className="w-full max-w-4xl mb-4 bg-gradient-to-r from-indigo-950/90 via-purple-950/90 to-indigo-950/90 border-2 border-amber-300/80 rounded-2xl px-4 py-3 flex items-center justify-between flex-wrap gap-3 shadow-lg print-hide no-print">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">🏅</span>
+                  <div>
+                    <div className="text-xs font-bold text-cyan-300 uppercase tracking-widest">Kişiye Özel Başarı Belgesi</div>
+                    <div className="text-sm sm:text-base font-black text-white">
+                      Tebrikler, <span className="text-amber-300 underline decoration-yellow-400 font-extrabold">{studentName.trim()}</span>! 5 kriptoloji kilidini başarıyla çözerek bu takvimi kazandınız.
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs font-black text-yellow-300 bg-amber-950/80 border border-amber-400 px-3 py-1.5 rounded-xl shadow-inner">
+                  ✨ 2027 Değerler Hazinesi
+                </div>
+              </div>
+            )}
+
+            {/* 2027 VALUES CALENDAR PRINT AREA (Strictly Single-Page Vertical Layout) */}
             <div
               ref={calendarPrintRef}
               id="calendarPrintTarget"
-              className="w-full max-w-4xl bg-slate-900/95 border-3 border-indigo-400/80 rounded-3xl p-4 sm:p-6 shadow-2xl backdrop-blur-xl"
+              className="w-full max-w-4xl bg-[#090d1a] border-2 border-indigo-400/80 rounded-2xl p-3 sm:p-4 shadow-2xl backdrop-blur-xl flex flex-col justify-between"
             >
-              <div className="mb-4 pb-3 border-b-2 border-indigo-500/40 flex items-center justify-between flex-wrap gap-3">
+              {/* Calendar Clean Header */}
+              <div className="mb-2.5 pb-2 border-b border-indigo-500/40 flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-yellow-300 via-amber-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent drop-shadow">
-                    2027 Yılı Değerler ve Bilgelik Takvimi
+                  <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-yellow-300 via-amber-300 to-cyan-300 bg-clip-text text-transparent leading-tight drop-shadow">
+                    2027 YILI DEĞERLER VE BİLGELİK TAKVİMİ
                   </h2>
-                  <p className="text-xs sm:text-sm text-cyan-200 font-bold">
+                  <p className="text-[10px] sm:text-[11px] text-cyan-200 font-bold">
                     Kriptoloji ve Algoritma Hazinesi • 12 Erdem & Bilgelik Rehberi
                   </p>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
                   {studentName.trim() && (
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-slate-950 font-black px-4 py-1.5 rounded-2xl border-2 border-yellow-200 shadow-xl">
-                      <span className="text-xs">🎓 Takvim Sahibi:</span>
-                      <span className="text-sm uppercase tracking-wide">{studentName.trim()}</span>
+                    <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-slate-950 font-black px-3 py-0.5 rounded-lg border border-yellow-200 text-xs shadow-md">
+                      <span className="text-[10px]">🎓 Sahibi:</span>
+                      <span className="text-xs uppercase tracking-wide">{studentName.trim()}</span>
                     </div>
                   )}
-                  <span className="text-xs font-black text-slate-950 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 border-2 border-white px-4 py-1.5 rounded-full shadow-lg">
-                    🌟 12 Ay • 12 Erdem
+                  <span className="text-[10px] sm:text-xs font-black text-slate-950 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 border border-white px-2.5 py-0.5 rounded-full shadow-md">
+                    🌟 2027 • 12 Erdem
                   </span>
                 </div>
               </div>
 
-              {/* Personalized Dedicated Certificate Banner in Calendar */}
-              {studentName.trim() && (
-                <div className="mb-4 bg-gradient-to-r from-indigo-950/90 via-purple-950/90 to-indigo-950/90 border-2 border-amber-300/80 rounded-2xl px-4 py-3 flex items-center justify-between flex-wrap gap-3 shadow-lg">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">🏅</span>
-                    <div>
-                      <div className="text-xs font-bold text-cyan-300 uppercase tracking-widest">Kişiye Özel Başarı Belgesi & Takvim</div>
-                      <div className="text-sm sm:text-base font-black text-white">
-                        Tebrikler, <span className="text-amber-300 underline decoration-yellow-400 font-extrabold">{studentName.trim()}</span>! 5 kriptoloji kilidini başarıyla çözerek bu takvimi kazandınız.
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-xs font-black text-yellow-300 bg-amber-950/80 border border-amber-400 px-3 py-1.5 rounded-xl shadow-inner">
-                    ✨ 2027 Dikey Takvim
-                  </div>
-                </div>
-              )}
-
-              {/* 3 Columns x 4 Rows Portrait Layout for Perfect Vertical Presentation */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+              {/* 3 Columns x 4 Rows Portrait Layout strictly fitting 1 A4 Page */}
+              <div className="grid grid-cols-3 gap-2">
                 {MONTHS_2027.map((m) => (
                   <div
                     key={m.index}
-                    className={`${m.cardBg} border-2 ${m.borderColor} rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between shadow-xl transition-all group`}
+                    className={`${m.cardBg} border ${m.borderColor} rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-md transition-all`}
                   >
                     <div>
                       {/* Month & Value Tag */}
-                      <div className="flex items-center justify-between mb-2 pb-2 border-b border-white/20">
-                        <span className="text-xs font-black uppercase tracking-wider text-amber-300 drop-shadow">
+                      <div className="flex items-center justify-between mb-1 pb-1 border-b border-white/20">
+                        <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-amber-300">
                           {m.month}
                         </span>
-                        <span className={`text-[11px] font-black ${m.badgeBg} border ${m.badgeBorder} ${m.badgeText} px-2.5 py-0.5 rounded-full shadow-md`}>
+                        <span className={`text-[8.5px] sm:text-[9.5px] font-black ${m.badgeBg} border ${m.badgeBorder} ${m.badgeText} px-2 py-0.2 rounded-full`}>
                           {m.value}
                         </span>
                       </div>
 
                       {/* Prominent Value Title */}
-                      <h3 className={`text-xl sm:text-2xl font-black ${m.titleColor} mb-1.5 tracking-tight drop-shadow`}>
+                      <h3 className={`text-xs sm:text-sm font-black ${m.titleColor} mb-0.5 tracking-tight`}>
                         {m.value}
                       </h3>
 
                       {/* Inspiring Value Quote */}
-                      <p className="text-xs sm:text-[13px] text-white font-medium italic leading-relaxed mb-2.5 drop-shadow-sm">
+                      <p className="text-[9px] sm:text-[10px] text-white/95 font-medium italic leading-snug mb-1">
                         "{m.quote}"
                       </p>
 
                       {/* Monthly Wisdom Guideline */}
-                      <div className={`text-[10.5px] sm:text-[11px] font-bold ${m.guidelineBg} border rounded-xl p-2 shadow-inner leading-relaxed`}>
-                        <span className="font-black text-yellow-300">📌 Rehber İlke:</span> {m.guideline}
+                      <div className={`text-[8px] sm:text-[8.5px] font-bold ${m.guidelineBg} border rounded-lg p-1 leading-tight`}>
+                        <span className="font-black text-yellow-300">📌 Rehber:</span> {m.guideline}
                       </div>
                     </div>
 
                     {/* Author Attribution */}
-                    <div className="pt-2 border-t border-white/20 mt-3 flex items-center justify-between text-xs">
+                    <div className="pt-1 border-t border-white/20 mt-1 flex items-center justify-between text-[8.5px] sm:text-[9px]">
                       <span className="font-black text-amber-200">— {m.author}</span>
-                      <span className="text-[11px] text-white/80 font-mono font-bold">2027</span>
+                      <span className="text-[8px] text-white/80 font-mono font-bold">2027</span>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Bottom Print Footer (Strictly No "Hazırlayan", displays owner if provided) */}
-              <div className="mt-5 pt-3.5 border-t-2 border-indigo-500/40 flex flex-col sm:flex-row items-center justify-between text-xs text-cyan-100 font-black gap-2">
+              <div className="mt-2 pt-1.5 border-t border-indigo-500/40 flex items-center justify-between text-[9px] sm:text-[10px] text-cyan-200 font-bold gap-2">
                 <span>
                   Değer Sandığı • 2027 Değerler Takvimi {studentName.trim() ? `• Takvim Sahibi: ${studentName.trim()}` : ''}
                 </span>
-                <span className="text-yellow-300 font-black">
-                  "Dürüstlük · Yardımlaşma · Saygı · Vefa · Sabır"
+                <span className="text-yellow-300 font-bold">
+                  "Dürüstlük · Yardımlaşma · Saygı, Sevgi ve Merhamet · Vefa · Sabır"
                 </span>
               </div>
             </div>
