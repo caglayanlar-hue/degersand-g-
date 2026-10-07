@@ -19,10 +19,12 @@ import {
   CheckCircle2,
   AlertCircle,
   HelpCircle,
-  ArrowRight
+  ArrowRight,
+  Compass
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { CaesarWheelModal } from './components/CaesarWheelModal';
 
 // 12 Months 2027 Values & Wisdom with Vivid Multi-Color Themes
 interface MonthData {
@@ -354,6 +356,7 @@ export default function App() {
   const [isShaking, setIsShaking] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
+  const [showCaesarWheel, setShowCaesarWheel] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
 
@@ -674,6 +677,19 @@ export default function App() {
 
         {/* Minimal Controls */}
         <div className="flex items-center gap-2">
+          {/* Sezar Çarkı Atölye Butonu */}
+          <button
+            onClick={() => {
+              sfx.playKey();
+              setShowCaesarWheel(true);
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 text-slate-950 border-2 border-white hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg shadow-amber-500/30"
+            title="İnteraktif Sezar Şifreleme Çarkını Aç"
+          >
+            <Compass className="w-4 h-4 text-slate-950 animate-spin-slow" />
+            <span className="hidden sm:inline">Sezar Çarkı</span>
+          </button>
+
           {stage !== 'final' && (
             <button
               onClick={() => {
@@ -910,9 +926,20 @@ export default function App() {
                   <span className="text-xs font-black text-rose-300 tracking-widest uppercase block mb-2">
                     ŞİFRELİ METİN
                   </span>
-                  <div className="text-3xl sm:text-4xl font-black text-rose-300 tracking-[0.3em] font-mono drop-shadow-[0_0_15px_rgba(244,63,94,0.9)]">
-                    B S P S Q R J S I
+                  <div className="text-3xl sm:text-4xl font-black text-rose-300 tracking-[0.3em] font-mono drop-shadow-[0_0_15px_rgba(244,63,94,0.9)] mb-3">
+                    F Y Ş Y T Ü N Y M
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playKey();
+                      setShowCaesarWheel(true);
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:brightness-110 text-slate-950 text-xs font-black shadow-md border border-yellow-200 transition-all cursor-pointer"
+                  >
+                    <Compass className="w-4 h-4 text-slate-950" />
+                    <span>⚙️ Sezar Çarkını Aç ve Çöz</span>
+                  </button>
                 </div>
 
                 {/* Input & Action */}
@@ -1472,6 +1499,17 @@ export default function App() {
           <span className="text-yellow-300 font-black">🌟 2027 Değerler Takvimi</span>
         </div>
       </footer>
+
+      {/* TÜBİTAK 4006 İnteraktif Sezar Çarkı Modalı */}
+      <CaesarWheelModal
+        isOpen={showCaesarWheel}
+        onClose={() => setShowCaesarWheel(false)}
+        initialShift={2}
+        onApplyWord={(word) => {
+          setInputValue(word);
+          inputRef.current?.focus();
+        }}
+      />
     </div>
   );
 }
