@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Değer Sandığı - Kriptoloji ve Algoritma Oyunu & 2027 Değerler Takvimi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: linear-gradient(135deg, #2e0854 0%, #1d4ed8 40%, #0284c7 70%, #047857 100%); color: #ffffff; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; position: relative; }
+    body::before { content: ""; position: fixed; top: 10%; left: 5%; width: 450px; height: 450px; background: rgba(236, 72, 153, 0.35); border-radius: 50%; filter: blur(120px); pointer-events: none; }
+    body::after { content: ""; position: fixed; bottom: 10%; right: 5%; width: 450px; height: 450px; background: rgba(245, 158, 11, 0.35); border-radius: 50%; filter: blur(120px); pointer-events: none; }
+
+    /* Vibrant Multi-Color Header */
+    header { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border-bottom: 2px solid rgba(129, 140, 248, 0.5); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .title-group { display: flex; align-items: center; gap: 12px; }
+    .badge-icon { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #fde047, #f59e0b, #e11d48); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.5); border: 2px solid #ffffff; }
+    .title-group h1 { font-size: 24px; font-weight: 900; background: linear-gradient(90deg, #fde047, #f59e0b, #f43f5e, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; }
+    .title-group p { font-size: 12px; color: #a5f3fc; font-weight: 800; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-ctrl { background: rgba(30, 27, 75, 0.8); color: #ffffff; border: 2px solid #818cf8; padding: 9px 16px; border-radius: 12px; font-size: 13px; font-weight: 900; cursor: pointer; transition: all 0.2s; touch-action: manipulation; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .btn-ctrl:hover { background: #4f46e5; color: #ffffff; transform: translateY(-1px); }
+    .btn-ctrl:active { transform: scale(0.96); }
+
+    /* Multi-Colored 5-Step Progress Bar */
+    .progress-bar { background: rgba(15, 23, 42, 0.85); padding: 12px 16px; border-bottom: 2px solid rgba(129, 140, 248, 0.4); display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; backdrop-blur-md; }
+    .lock-pill { display: flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 9999px; font-size: 12px; font-weight: 900; border: 2px solid #334155; background: rgba(15, 23, 42, 0.7); color: #cbd5e1; transition: all 0.3s; }
+    .lock-pill.active { border-color: #ffffff; background: #e11d48; color: #ffffff; box-shadow: 0 0 20px #f43f5e; transform: scale(1.05); }
+    .lock-pill.unlocked { border-color: #34d399; background: #059669; color: #ffffff; box-shadow: 0 0 15px #10b981; }
+
+    /* Main Container */
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; max-width: 1060px; width: 100%; margin: 0 auto; position: relative; z-index: 10; }
+
+    /* Luminous Golden Treasure Chest */
+    .chest-wrap { position: relative; margin: 15px 0 25px 0; display: flex; justify-content: center; }
+    .chest-box { width: 330px; height: 180px; background: linear-gradient(180deg, #f59e0b 0%, #d97706 50%, #92400e 100%); border: 4px solid #fef08a; border-radius: 26px; position: relative; box-shadow: 0 20px 50px rgba(245, 158, 11, 0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.5s; }
+    .chest-box.glow { border-color: #34d399; box-shadow: 0 0 50px rgba(52, 211, 153, 0.6); }
+    .chest-line-gold { position: absolute; top: 14px; left: 16px; right: 16px; height: 10px; background: linear-gradient(90deg, #fef08a, #ffffff, #fef08a); border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+    .chest-line-teal { position: absolute; bottom: 14px; left: 16px; right: 16px; height: 10px; background: linear-gradient(90deg, #fef08a, #ffffff, #fef08a); border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+    .chest-locks { display: flex; gap: 10px; z-index: 2; background: rgba(2, 6, 23, 0.95); padding: 10px 16px; border-radius: 20px; border: 2px solid #fde047; box-shadow: 0 10px 25px rgba(0,0,0,0.7); }
+    .lock-node { width: 44px; height: 44px; border-radius: 14px; background: #000; border: 2px solid #78350f; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #a16207; transition: all 0.3s; }
+    .lock-node.active { border-color: #ffffff; color: #fff; background: linear-gradient(135deg, #f59e0b, #ea580c); box-shadow: 0 0 20px #f59e0b; transform: scale(1.1); }
+    .lock-node.open { border-color: #ffffff; color: #fff; background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 0 20px #10b981; }
+
+    /* Vibrant Panels */
+    .panel-card { background: rgba(15, 23, 42, 0.92); border: 3px solid #f59e0b; border-radius: 28px; padding: 34px 30px; width: 100%; max-width: 620px; box-shadow: 0 25px 60px rgba(0,0,0,0.6); text-align: center; backdrop-filter: blur(16px); }
+    .panel-card.theme-rose { border-color: #fb7185; box-shadow: 0 25px 60px rgba(244,63,94,0.4); }
+    .panel-card.theme-emerald { border-color: #34d399; box-shadow: 0 25px 60px rgba(16,185,129,0.4); }
+    .panel-card.theme-cyan { border-color: #22d3ee; box-shadow: 0 25px 60px rgba(6,182,212,0.4); }
+    .panel-card.theme-purple { border-color: #c084fc; box-shadow: 0 25px 60px rgba(168,85,247,0.4); }
+    .panel-card.theme-amber { border-color: #fde047; box-shadow: 0 25px 60px rgba(245,158,11,0.4); }
+
+    .stage-badge { display: inline-block; padding: 6px 16px; background: rgba(245, 158, 11, 0.25); border: 2px solid #fde047; color: #fde047; border-radius: 9999px; font-size: 12px; font-weight: 900; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stage-title { font-size: 28px; font-weight: 900; color: #ffffff; margin-bottom: 12px; }
+    .stage-hint { font-size: 18px; font-weight: 900; color: #ffffff; line-height: 1.5; margin-bottom: 20px; background: rgba(245, 158, 11, 0.2); border: 2px solid #fde047; padding: 14px 18px; border-radius: 16px; }
+
+    .cipher-container { background: rgba(2, 6, 23, 0.85); border: 2px solid #818cf8; border-radius: 20px; padding: 22px; margin-bottom: 22px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.6); }
+    .cipher-label { font-size: 11px; font-weight: 900; color: #a5b4fc; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+    .cipher-text { font-size: 32px; font-weight: 900; letter-spacing: 5px; color: #38bdf8; word-break: break-all; text-shadow: 0 0 18px rgba(56, 189, 248, 0.8); }
+
+    .input-wrap { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+    .main-input { width: 100%; background: rgba(2, 6, 23, 0.9); border: 3px solid #818cf8; border-radius: 18px; padding: 16px 20px; font-size: 24px; font-weight: 900; color: #ffffff; text-align: center; text-transform: uppercase; outline: none; transition: all 0.2s; letter-spacing: 2px; }
+    .main-input:focus { border-color: #fde047; box-shadow: 0 0 25px rgba(253, 224, 71, 0.6); }
+    .main-input.error { border-color: #f43f5e; box-shadow: 0 0 30px rgba(244, 63, 94, 0.7); animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+    .main-input.success { border-color: #10b981; box-shadow: 0 0 30px rgba(16, 185, 129, 0.7); }
+
+    .btn-submit { background: linear-gradient(135deg, #f59e0b, #ea580c, #e11d48); color: #ffffff; border: 2px solid #ffffff; padding: 16px 34px; border-radius: 18px; font-size: 18px; font-weight: 900; cursor: pointer; transition: all 0.2s; box-shadow: 0 10px 30px rgba(234, 88, 12, 0.5); touch-action: manipulation; }
+    .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 14px 35px rgba(234, 88, 12, 0.6); }
+    .btn-submit:active { transform: translateY(1px); }
+
+    .feedback { min-height: 40px; font-size: 15px; font-weight: 900; border-radius: 12px; padding: 8px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
+    .feedback.error { background: rgba(225, 29, 72, 0.3); border: 2px solid #f43f5e; color: #fecdd3; }
+    .feedback.success { background: rgba(5, 150, 105, 0.3); border: 2px solid #10b981; color: #a7f3d0; }
+
+    /* Virtual Keyboard */
+    .keyboard-container { width: 100%; max-width: 760px; background: rgba(15, 23, 42, 0.95); border: 2px solid #818cf8; border-radius: 18px; padding: 14px; margin: 16px auto 0 auto; box-shadow: 0 15px 35px rgba(0,0,0,0.7); backdrop-filter: blur(16px); }
+    .kb-row { display: flex; justify-content: center; gap: 5px; margin-bottom: 5px; }
+    .kb-key { background: #1e1b4b; color: #ffffff; border: 2px solid #4f46e5; min-width: 40px; height: 48px; border-radius: 10px; font-size: 17px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; transition: all 0.1s; flex: 1; max-width: 54px; }
+    .kb-key:hover, .kb-key:active { background: #f59e0b; color: #020617; border-color: #ffffff; transform: scale(1.05); }
+    .kb-key.action-key { flex: 2; max-width: 110px; font-size: 13px; background: #334155; }
+
+    /* 2027 DEĞERLER TAKVİMİ KARTLARI (GÜN ÇİZELGESİ OLMADAN, ÇOK RENKLİ) */
+    .calendar-target { width: 100%; background: rgba(15, 23, 42, 0.95); border: 3px solid #818cf8; border-radius: 28px; padding: 24px; box-shadow: 0 25px 60px rgba(0,0,0,0.8); backdrop-filter: blur(16px); }
+    .calendar-target-header { border-bottom: 2px solid rgba(129, 140, 248, 0.4); padding-bottom: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .calendar-target-header h2 { font-size: 24px; font-weight: 900; background: linear-gradient(90deg, #fde047, #f43f5e, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .calendar-target-header p { font-size: 13px; color: #a5f3fc; font-weight: bold; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .month-card { border-radius: 18px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.3); }
+    .month-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 35px rgba(0,0,0,0.7); border-color: #ffffff; }
+    .month-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px; margin-bottom: 10px; }
+    .month-title { font-size: 13px; font-weight: 900; color: #fef08a; text-transform: uppercase; letter-spacing: 0.5px; }
+    .month-val { font-size: 11px; font-weight: 900; color: #ffffff; background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.4); padding: 3px 8px; border-radius: 9999px; }
+    .month-val-title { font-size: 22px; font-weight: 900; color: #ffffff; margin-bottom: 8px; }
+    .month-quote-box { margin-bottom: 10px; }
+    .month-quote { font-size: 12.5px; color: #ffffff; font-style: italic; line-height: 1.45; }
+    .month-guideline { font-size: 11px; color: #ffffff; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 8px; margin-top: 8px; line-height: 1.35; font-weight: bold; }
+    .month-author-box { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .month-author { font-size: 12px; font-weight: 900; color: #fde047; }
+    .month-year { font-size: 11px; color: #e2e8f0; font-family: monospace; font-weight: bold; }
+
+    #confettiCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-12px); }
+      40% { transform: translateX(12px); }
+      60% { transform: translateX(-8px); }
+      80% { transform: translateX(8px); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confettiCanvas"></canvas>
+
+  <header>
+    <div class="title-group">
+      <div class="badge-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#070b14" stroke-width="2.5">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+        </svg>
+      </div>
+      <div>
+        <h1>DEĞER SANDIĞI</h1>
+        <p>5 Aşamalı Kriptoloji Oyunu ve 2027 Değerler Takvimi</p>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn-ctrl" onclick="toggleKeyboard()">⌨️ Sanal Klavye</button>
+      <button class="btn-ctrl" onclick="toggleAudio()" id="btnAudio">🔊 Ses: Açık</button>
+      <button class="btn-ctrl" onclick="toggleFullscreen()">⛶ Tam Ekran</button>
+      <button class="btn-ctrl" onclick="restartGame()">🔄 Baştan Başla</button>
+    </div>
+  </header>
+
+  <div class="progress-bar">
+    <div class="lock-pill" id="pill1"><span>🔒</span> 1. Sezar</div>
+    <div class="lock-pill" id="pill2"><span>🔒</span> 2. Ters Çevirme</div>
+    <div class="lock-pill" id="pill3"><span>🔒</span> 3. Değiştirme</div>
+    <div class="lock-pill" id="pill4"><span>🔒</span> 4. Akrostiş</div>
+    <div class="lock-pill" id="pill5"><span>🔒</span> 5. Anagram</div>
+  </div>
+
+  <main id="mainContainer"></main>
+
+  <!-- Virtual Smartboard Keyboard -->
+  <div class="keyboard-container" id="virtualKeyboard" style="display: none;">
+    <div class="kb-row">
+      <button class="kb-key" onclick="kbPress('Q')">Q</button>
+      <button class="kb-key" onclick="kbPress('W')">W</button>
+      <button class="kb-key" onclick="kbPress('E')">E</button>
+      <button class="kb-key" onclick="kbPress('R')">R</button>
+      <button class="kb-key" onclick="kbPress('T')">T</button>
+      <button class="kb-key" onclick="kbPress('Y')">Y</button>
+      <button class="kb-key" onclick="kbPress('U')">U</button>
+      <button class="kb-key" onclick="kbPress('I')">I</button>
+      <button class="kb-key" onclick="kbPress('O')">O</button>
+      <button class="kb-key" onclick="kbPress('P')">P</button>
+      <button class="kb-key" onclick="kbPress('Ğ')">Ğ</button>
+      <button class="kb-key" onclick="kbPress('Ü')">Ü</button>
+    </div>
+    <div class="kb-row">
+      <button class="kb-key" onclick="kbPress('A')">A</button>
+      <button class="kb-key" onclick="kbPress('S')">S</button>
+      <button class="kb-key" onclick="kbPress('D')">D</button>
+      <button class="kb-key" onclick="kbPress('F')">F</button>
+      <button class="kb-key" onclick="kbPress('G')">G</button>
+      <button class="kb-key" onclick="kbPress('H')">H</button>
+      <button class="kb-key" onclick="kbPress('J')">J</button>
+      <button class="kb-key" onclick="kbPress('K')">K</button>
+      <button class="kb-key" onclick="kbPress('L')">L</button>
+      <button class="kb-key" onclick="kbPress('Ş')">Ş</button>
+      <button class="kb-key" onclick="kbPress('İ')">İ</button>
+    </div>
+    <div class="kb-row">
+      <button class="kb-key" onclick="kbPress('Z')">Z</button>
+      <button class="kb-key" onclick="kbPress('X')">X</button>
+      <button class="kb-key" onclick="kbPress('C')">C</button>
+      <button class="kb-key" onclick="kbPress('V')">V</button>
+      <button class="kb-key" onclick="kbPress('B')">B</button>
+      <button class="kb-key" onclick="kbPress('N')">N</button>
+      <button class="kb-key" onclick="kbPress('M')">M</button>
+      <button class="kb-key" onclick="kbPress('Ö')">Ö</button>
+      <button class="kb-key" onclick="kbPress('Ç')">Ç</button>
+      <button class="kb-key action-key" onclick="kbBackspace()">⌫ Sil</button>
+    </div>
+    <div class="kb-row">
+      <button class="kb-key action-key" onclick="kbClear()">Temizle</button>
+      <button class="kb-key" style="flex: 4; max-width: 300px;" onclick="kbPress(' ')">␣ Boşluk</button>
+      <button class="kb-key action-key" style="background:#f59e0b; color:#070b14; font-weight:900;" onclick="handleCheck()">Onayla ↵</button>
+    </div>
+  </div>
+
+  <script>
+    const MONTHS = [
+      { name: 'Ocak 2027', val: 'Dürüstlük', quote: 'Cümleler doğrudur sen doğru isen, doğruluk bulunmaz sen eğri isen.', author: 'Yunus Emre', guideline: 'Sözde, işte ve niyette her zaman doğru ve ilkeli olmak.', bg: 'linear-gradient(135deg, #b91c1c, #7f1d1d)', border: '#f43f5e' },
+      { name: 'Şubat 2027', val: 'Yardımlaşma', quote: 'Bir elin nesi var, iki elin sesi var. Birlikten kuvvet doğar.', author: 'Geleneksel Atasözü', guideline: 'Zorlukları dayanışma ve kardeşlikle omuz omuza aşmak.', bg: 'linear-gradient(135deg, #047857, #064e3b)', border: '#10b981' },
+      { name: 'Mart 2027', val: 'Saygı', quote: 'Yaratılanı hoş gör, Yaradan’dan ötürü. Büyüklere hürmet, küçüklere şefkat.', author: 'Yunus Emre', guideline: 'Farklılıklara hürmet edip nezaket ve sevgi diliyle yaklaşmak.', bg: 'linear-gradient(135deg, #0284c7, #075985)', border: '#06b6d4' },
+      { name: 'Nisan 2027', val: 'Vefa', quote: 'Vefa; hatırlamak değil, hiç unutmamaktır. Emek ve sevgi kutsaldır.', author: 'Geleneksel Hikmet', guideline: 'Verilen emeği, dostluğu ve iyiliği ömür boyu aziz bilmek.', bg: 'linear-gradient(135deg, #7c3aed, #4c1d95)', border: '#a855f7' },
+      { name: 'Mayıs 2027', val: 'Sabır', quote: 'Sabır acıdır, lakin meyvesi pek tatlıdır.', author: 'Sâdi-i Şîrâzî', guideline: 'Hedefe ulaşırken azimle ve metanetle yola devam etmek.', bg: 'linear-gradient(135deg, #d97706, #78350f)', border: '#f59e0b' },
+      { name: 'Haziran 2027', val: 'Sevgi', quote: 'Sevelim sevilelim, bu dünya kimseye kalmaz.', author: 'Yunus Emre', guideline: 'Gönülleri birleştiren en büyük gücün karşılıksız sevgi olduğunu bilmek.', bg: 'linear-gradient(135deg, #db2777, #831843)', border: '#ec4899' },
+      { name: 'Temmuz 2027', val: 'Adalet', quote: 'Adalet kutup yıldızı gibi yerinde durur ve her şey onun etrafında döner.', author: 'Konfüçyüs', guideline: 'Her durumda haklının yanında olmak, hakkaniyeti üstün tutmak.', bg: 'linear-gradient(135deg, #2563eb, #1e3a8a)', border: '#3b82f6' },
+      { name: 'Ağustos 2027', val: 'Hoşgörü', quote: 'Ne olursan ol, yine gel... Bizim dergâhımız ümitsizlik dergâhı değildir.', author: 'Mevlâna Celâleddîn-i Rûmî', guideline: 'Hataları affetme olgunluğu ve geniş bir yürekle kucak açmak.', bg: 'linear-gradient(135deg, #0d9488, #115e59)', border: '#14b8a6' },
+      { name: 'Eylül 2027', val: 'Cesaret', quote: 'Cesaret, hak bildiğin yolda korkuyu bilgi ve inançla aşmaktır.', author: 'Bilgelik Öğüdü', guideline: 'Doğru olanı savunmaktan ve yeni ufuklara adım atmaktan çekinmemek.', bg: 'linear-gradient(135deg, #e11d48, #9f1239)', border: '#f43f5e' },
+      { name: 'Ekim 2027', val: 'Sorumluluk', quote: 'Yalnızca yaptıklarımızdan değil, yapmadıklarımızdan da mesulüz.', author: 'Molière', guideline: 'Vazifelerini zamanında yerine getirip çevrene ve topluma sahip çıkmak.', bg: 'linear-gradient(135deg, #4f46e5, #312e81)', border: '#6366f1' },
+      { name: 'Kasım 2027', val: 'Empati', quote: 'Damdan düşenin halini, ancak damdan düşen anlar.', author: 'Nasreddin Hoca', guideline: 'Kendini başkalarının yerine koyabilmek ve dertlerine ortak olmak.', bg: 'linear-gradient(135deg, #c026d3, #701a75)', border: '#d946ef' },
+      { name: 'Aralık 2027', val: 'Umut', quote: 'Gecenin en karanlık anı, şafağa en yakın zamandır.', author: 'Geleneksel Hikmet', guideline: 'Yarınlara daima aydınlık bir inanç ve heyecanla bakmak.', bg: 'linear-gradient(135deg, #0891b2, #155e75)', border: '#06b6d4' }
+    ];
+
+    let currentStep = 'intro';
+    let locks = [false, false, false, false, false];
+    let audioEnabled = true;
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, duration, type='sine') {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function soundUnlock() {
+      if (!audioEnabled) return;
+      [523, 659, 783, 1046].forEach((f, i) => {
+        setTimeout(() => playTone(f, 0.35, 'triangle'), i * 85);
+      });
+    }
+
+    function soundError() {
+      if (!audioEnabled) return;
+      playTone(130, 0.22, 'sawtooth');
+    }
+
+    function soundVictory() {
+      if (!audioEnabled) return;
+      [523, 659, 783, 1046, 1318].forEach((f, i) => {
+        setTimeout(() => playTone(f, 0.65, 'sine'), i * 130);
+      });
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      document.getElementById('btnAudio').textContent = audioEnabled ? '🔊 Ses: Açık' : '🔇 Ses: Kapalı';
+    }
+
+    function toggleKeyboard() {
+      const kb = document.getElementById('virtualKeyboard');
+      kb.style.display = kb.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(()=>{});
+      } else {
+        document.exitFullscreen().catch(()=>{});
+      }
+    }
+
+    function normalizeTr(str) {
+      if (!str) return '';
+      return str.replace(/i/g, 'İ').replace(/ı/g, 'I').toLocaleUpperCase('tr-TR').trim().replace(/\s+/g, ' ');
+    }
+
+    function updateProgressBar() {
+      const pills = [
+        { el: document.getElementById('pill1'), label: '1. Sezar', val: 'Dürüstlük', unlocked: locks[0], active: currentStep === 'lock1' },
+        { el: document.getElementById('pill2'), label: '2. Ters Çevirme', val: 'Yardımlaşma', unlocked: locks[1], active: currentStep === 'lock2' },
+        { el: document.getElementById('pill3'), label: '3. Değiştirme', val: 'Saygı', unlocked: locks[2], active: currentStep === 'lock3' },
+        { el: document.getElementById('pill4'), label: '4. Akrostiş', val: 'Vefa', unlocked: locks[3], active: currentStep === 'lock4' },
+        { el: document.getElementById('pill5'), label: '5. Anagram', val: 'Sabır', unlocked: locks[4], active: currentStep === 'lock5' }
+      ];
+
+      pills.forEach((p, idx) => {
+        if (!p.el) return;
+        p.el.className = 'lock-pill ' + (p.unlocked ? 'unlocked' : p.active ? 'active' : '');
+        p.el.innerHTML = (p.unlocked ? '🔓' : '🔒') + ` ${idx+1}. ` + (p.unlocked ? p.val : p.label);
+      });
+    }
+
+    function renderScreen() {
+      updateProgressBar();
+      const container = document.getElementById('mainContainer');
+
+      if (currentStep === 'intro') {
+        container.innerHTML = `
+          <div class="chest-wrap">
+            <div class="chest-box">
+              <div class="chest-line-gold"></div>
+              <div class="chest-line-teal"></div>
+              <div class="chest-locks">
+                <div class="lock-node">🔒</div>
+                <div class="lock-node">🔒</div>
+                <div class="lock-node">🔒</div>
+                <div class="lock-node">🔒</div>
+                <div class="lock-node">🔒</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-card">
+            <div class="stage-badge">✨ GİZEMLİ VE RENKLİ DEĞER SANDIĞI</div>
+            <h2 class="stage-title">Değer Sandığına Hoş Geldin!</h2>
+            <p style="color:#e0e7ff; margin-bottom: 24px; font-size:16px; font-weight:700;">
+              Şifreleri çöz, sandığı aç ve 2027 Değerler Hazinesine ulaş!
+            </p>
+            <button class="btn-submit" onclick="goToStep('lock1')">🗝️ Kilidi Açmaya Başla</button>
+          </div>
+        `;
+      } else if (currentStep === 'lock1') {
+        container.innerHTML = `
+          <div class="panel-card theme-rose">
+            <div class="stage-badge" style="background:#e11d48; border-color:#ffffff; color:#ffffff;">💎 1. KİLİT • SEZAR ŞİFRELEMESİ</div>
+            <h2 class="stage-title">1. Kilit</h2>
+            <div class="stage-hint" style="background:rgba(225,29,72,0.3); border-color:#f43f5e;">Alfabede 2 adım geriye git.</div>
+            <div class="cipher-container" style="border-color:#f43f5e;">
+              <div class="cipher-label" style="color:#fecdd3;">ŞİFRELİ METİN</div>
+              <div class="cipher-text" style="color:#fda4af; text-shadow:0 0 15px #f43f5e;">B S P S Q R J S I</div>
+            </div>
+            <div class="input-wrap">
+              <input type="text" id="answerInput" class="main-input" style="border-color:#f43f5e;" placeholder="Kelimeyi buraya yazın..." autocomplete="off" autofocus />
+              <button class="btn-submit" style="background:linear-gradient(135deg, #f43f5e, #e11d48, #be123c);" onclick="handleCheck()">KONTROL ET VE AÇ 🔓</button>
+            </div>
+            <div id="feedbackBox"></div>
+          </div>
+        `;
+        bindInputEnter();
+      } else if (currentStep === 'lock2') {
+        container.innerHTML = `
+          <div class="panel-card theme-emerald">
+            <div class="stage-badge" style="background:#059669; border-color:#ffffff; color:#ffffff;">💎 2. KİLİT • TERSİNE ÇEVİRME</div>
+            <h2 class="stage-title">2. Kilit</h2>
+            <div class="stage-hint" style="background:rgba(5,150,105,0.3); border-color:#10b981;">Sondan başa doğru oku ve gizli boşlukları bul.</div>
+            <div class="cipher-container" style="border-color:#10b981;">
+              <div class="cipher-label" style="color:#a7f3d0;">ŞİFRELİ METİN</div>
+              <div class="cipher-text" style="color:#6ee7b7; text-shadow:0 0 15px #10b981;">RAĞODTEVVUKNETKİLRİB</div>
+            </div>
+            <div class="input-wrap">
+              <input type="text" id="answerInput" class="main-input" style="border-color:#10b981;" placeholder="Atasözünü yazın..." autocomplete="off" autofocus />
+              <button class="btn-submit" style="background:linear-gradient(135deg, #10b981, #059669, #0d9488);" onclick="handleCheck()">KONTROL ET VE AÇ 🔓</button>
+            </div>
+            <div id="feedbackBox"></div>
+          </div>
+        `;
+        bindInputEnter();
+      } else if (currentStep === 'lock3') {
+        container.innerHTML = `
+          <div class="panel-card theme-cyan">
+            <div class="stage-badge" style="background:#0891b2; border-color:#ffffff; color:#ffffff;">💎 3. KİLİT • KARAKTER DEĞİŞTİRME</div>
+            <h2 class="stage-title">3. Kilit</h2>
+            <div class="stage-hint" style="background:rgba(8,145,178,0.3); border-color:#06b6d4;">Sadece sesli harflere odaklan: A=1, E=2, I=3, İ=4, O=5...</div>
+            <div class="cipher-container" style="border-color:#06b6d4;">
+              <div class="cipher-label" style="color:#bae6fd;">ŞİFRELİ METİN</div>
+              <div class="cipher-text" style="color:#38bdf8; text-shadow:0 0 15px #0284c7;">S1YG3</div>
+            </div>
+            <div class="input-wrap">
+              <input type="text" id="answerInput" class="main-input" style="border-color:#06b6d4;" placeholder="Değeri yazın..." autocomplete="off" autofocus />
+              <button class="btn-submit" style="background:linear-gradient(135deg, #06b6d4, #0284c7, #2563eb);" onclick="handleCheck()">KONTROL ET VE AÇ 🔓</button>
+            </div>
+            <div id="feedbackBox"></div>
+          </div>
+        `;
+        bindInputEnter();
+      } else if (currentStep === 'lock4') {
+        container.innerHTML = `
+          <div class="panel-card theme-purple">
+            <div class="stage-badge" style="background:#7c3aed; border-color:#ffffff; color:#ffffff;">💎 4. KİLİT • AKROSTİŞ ALGORİTMASI</div>
+            <h2 class="stage-title">4. Kilit</h2>
+            <div class="stage-hint" style="background:rgba(124,58,237,0.3); border-color:#a855f7;">Kelimelerin başındaki sırrı çöz.</div>
+            <div class="cipher-container" style="border-color:#a855f7;">
+              <div class="cipher-label" style="color:#e9d5ff;">ŞİFRELİ METİN</div>
+              <div class="cipher-text" style="font-size:24px; color:#f5d0fe; text-shadow:0 0 15px #a855f7; line-height:1.6;">
+                <span style="color:#fde047; font-size:28px; font-weight:900; text-decoration:underline;">V</span>akit
+                <span style="color:#fde047; font-size:28px; font-weight:900; text-decoration:underline;">E</span>rken
+                <span style="color:#fde047; font-size:28px; font-weight:900; text-decoration:underline;">F</span>ırtına
+                <span style="color:#fde047; font-size:28px; font-weight:900; text-decoration:underline;">A</span>kşamı
+              </div>
+            </div>
+            <div class="input-wrap">
+              <input type="text" id="answerInput" class="main-input" style="border-color:#a855f7;" placeholder="Gizli kelimeyi yazın..." autocomplete="off" autofocus />
+              <button class="btn-submit" style="background:linear-gradient(135deg, #a855f7, #7c3aed, #d946ef);" onclick="handleCheck()">KONTROL ET VE AÇ 🔓</button>
+            </div>
+            <div id="feedbackBox"></div>
+          </div>
+        `;
+        bindInputEnter();
+      } else if (currentStep === 'lock5') {
+        container.innerHTML = `
+          <div class="panel-card theme-amber">
+            <div class="stage-badge" style="background:#f59e0b; border-color:#ffffff; color:#020617;">💎 5. KİLİT • ANAGRAM (KARIŞIK HARFLER)</div>
+            <h2 class="stage-title">5. Kilit</h2>
+            <div class="stage-hint" style="background:rgba(245,158,11,0.3); border-color:#f59e0b;">Harflerin yeri karışmış. Doğru sıraya dizerek bu erdemi ortaya çıkar.</div>
+            <div class="cipher-container" style="border-color:#f59e0b;">
+              <div class="cipher-label" style="color:#fef08a;">ŞİFRELİ METİN</div>
+              <div class="cipher-text" style="letter-spacing:6px; color:#fde047; text-shadow:0 0 15px #f59e0b;">R I S B A</div>
+            </div>
+            <div class="input-wrap">
+              <input type="text" id="answerInput" class="main-input" style="border-color:#f59e0b;" placeholder="Son kelimeyi yazın..." autocomplete="off" autofocus />
+              <button class="btn-submit" style="background:linear-gradient(135deg, #f59e0b, #ea580c, #eab308); color:#020617;" onclick="handleCheck()">KONTROL ET VE HAZİNEYE ULAŞ ✨</button>
+            </div>
+            <div id="feedbackBox"></div>
+          </div>
+        `;
+        bindInputEnter();
+      } else if (currentStep === 'final') {
+        startConfetti();
+        soundVictory();
+
+        // 12 Months 2027 Value Cards (Gün çizelgesi olmadan, zengin mücevher renkleri)
+        let monthsHtml = '';
+
+        MONTHS.forEach((m) => {
+          monthsHtml += `
+            <div class="month-card" style="background:${m.bg}; border: 2px solid ${m.border};">
+              <div>
+                <div class="month-header">
+                  <span class="month-title">${m.name}</span>
+                  <span class="month-val">${m.val}</span>
+                </div>
+                <h3 class="month-val-title">${m.val}</h3>
+                <div class="month-quote-box">
+                  <p class="month-quote">"${m.quote}"</p>
+                </div>
+                <div class="month-guideline">
+                  <strong style="color:#fde047;">📌 Rehber İlke:</strong> ${m.guideline}
+                </div>
+              </div>
+              <div class="month-author-box">
+                <span class="month-author">— ${m.author}</span>
+                <span class="month-year">2027</span>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = `
+          <div style="width:100%; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+            <div>
+              <div class="stage-badge" style="background:#059669; border-color:#ffffff; color:#ffffff;">✨ 5 Kilit Çözüldü • Hazine Açıldı</div>
+              <h1 style="color:#fde047; font-size:32px; font-weight:900; letter-spacing:-0.5px;">2027 Değerler Takvimi</h1>
+              <p style="font-size:14px; color:#e0e7ff; font-weight:700;">12 Aya ait erdemler, bilgelik sözleri ve rehber ilkeler.</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-submit" id="btnDownloadPdf" onclick="downloadCalendarPdf()" style="padding:14px 26px; font-size:16px; cursor:pointer;">
+                📥 Takvimi PDF Olarak İndir
+              </button>
+              <button class="btn-ctrl" onclick="restartGame()" style="padding:14px 22px; font-size:15px; cursor:pointer; background:rgba(225,29,72,0.8); border-color:#f43f5e;">
+                🔄 Baştan Başla
+              </button>
+            </div>
+          </div>
+
+          <div class="calendar-target" id="calendarPrintTarget">
+            <div class="calendar-target-header">
+              <div>
+                <h2>2027 Yılı Değerler ve Bilgelik Takvimi</h2>
+                <p>Kriptoloji ve Algoritma Hazinesi • Ortaokul Değerler Eğitimi</p>
+              </div>
+              <span class="month-val" style="font-size:12px; padding:6px 14px; background:#f59e0b; color:#020617; font-weight:900; border-color:#ffffff;">🌟 12 Ay • 12 Erdem</span>
+            </div>
+
+            <div class="calendar-grid">
+              ${monthsHtml}
+            </div>
+
+            <div style="margin-top:22px; padding-top:14px; border-top:2px solid rgba(255,255,255,0.2); display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; flex-wrap:wrap; gap:8px; font-weight:800;">
+              <span>Değer Sandığı • 2027 Değerler Takvimi</span>
+              <span style="color:#fde047; font-weight:900;">"Dürüstlük · Yardımlaşma · Saygı · Vefa · Sabır"</span>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    async function downloadCalendarPdf() {
+      const element = document.getElementById('calendarPrintTarget');
+      if (!element) return;
+      const btn = document.getElementById('btnDownloadPdf');
+      if (btn) btn.innerText = '⏳ PDF Hazırlanıyor...';
+
+      try {
+        if (window.html2pdf) {
+          const opt = {
+            margin: [8, 8, 8, 8],
+            filename: '2027_Degerler_Takvimi.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#0a1120' },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+          };
+          await window.html2pdf().set(opt).from(element).save();
+        } else {
+          window.print();
+        }
+      } catch (e) {
+        console.error('PDF indirme hatası:', e);
+        window.print();
+      } finally {
+        if (btn) btn.innerText = '📥 Takvimi PDF Olarak İndir';
+      }
+    }
+
+    function bindInputEnter() {
+      const inp = document.getElementById('answerInput');
+      if (inp) {
+        inp.focus();
+        inp.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') handleCheck();
+        });
+      }
+    }
+
+    function kbPress(char) {
+      const inp = document.getElementById('answerInput');
+      if (!inp) return;
+      inp.value += char;
+      inp.focus();
+    }
+
+    function kbBackspace() {
+      const inp = document.getElementById('answerInput');
+      if (!inp) return;
+      inp.value = inp.value.slice(0, -1);
+      inp.focus();
+    }
+
+    function kbClear() {
+      const inp = document.getElementById('answerInput');
+      if (!inp) return;
+      inp.value = '';
+      inp.focus();
+    }
+
+    function handleCheck() {
+      const inp = document.getElementById('answerInput');
+      const fb = document.getElementById('feedbackBox');
+      if (!inp) return;
+
+      const userVal = normalizeTr(inp.value);
+
+      if (currentStep === 'lock1') {
+        if (userVal === 'DÜRÜSTLÜK' || userVal === 'DURUSTLUK') {
+          soundUnlock();
+          locks[0] = true;
+          inp.className = 'main-input success';
+          fb.innerHTML = '<div class="feedback success">✓ Doğru! 1. Kilit Açıldı: Dürüstlük</div>';
+          setTimeout(() => goToStep('lock2'), 1200);
+        } else {
+          soundError();
+          inp.className = 'main-input error';
+          fb.innerHTML = '<div class="feedback error">✗ Hatalı şifre. Alfabede 2 adım geriye git!</div>';
+          setTimeout(() => { inp.className = 'main-input'; }, 500);
+        }
+      } else if (currentStep === 'lock2') {
+        const compactVal = userVal.replace(/\s+/g, '');
+        if (userVal === 'BİRLİKTEN KUVVET DOĞAR' || userVal === 'BIRLIKTEN KUVVET DOGAR' || compactVal === 'BİRLİKTENKUVVETDOĞAR' || compactVal === 'BIRLIKTENKUVVETDOGAR') {
+          soundUnlock();
+          locks[1] = true;
+          inp.className = 'main-input success';
+          fb.innerHTML = '<div class="feedback success">✓ Doğru! 2. Kilit Açıldı: Yardımlaşma</div>';
+          setTimeout(() => goToStep('lock3'), 1200);
+        } else {
+          soundError();
+          inp.className = 'main-input error';
+          fb.innerHTML = '<div class="feedback error">✗ Hatalı söz. Metni sondan başa doğru oku ve boşlukları bul!</div>';
+          setTimeout(() => { inp.className = 'main-input'; }, 500);
+        }
+      } else if (currentStep === 'lock3') {
+        if (userVal === 'SAYGI') {
+          soundUnlock();
+          locks[2] = true;
+          inp.className = 'main-input success';
+          fb.innerHTML = '<div class="feedback success">✓ Doğru! 3. Kilit Açıldı: Saygı</div>';
+          setTimeout(() => goToStep('lock4'), 1200);
+        } else {
+          soundError();
+          inp.className = 'main-input error';
+          fb.innerHTML = '<div class="feedback error">✗ Hatalı değer. Sesli harf kuralını uygula!</div>';
+          setTimeout(() => { inp.className = 'main-input'; }, 500);
+        }
+      } else if (currentStep === 'lock4') {
+        if (userVal === 'VEFA') {
+          soundUnlock();
+          locks[3] = true;
+          inp.className = 'main-input success';
+          fb.innerHTML = '<div class="feedback success">✓ Doğru! 4. Kilit Açıldı: Vefa</div>';
+          setTimeout(() => goToStep('lock5'), 1200);
+        } else {
+          soundError();
+          inp.className = 'main-input error';
+          fb.innerHTML = '<div class="feedback error">✗ Hatalı kelime. Kelimelerin baş harflerini birleştir!</div>';
+          setTimeout(() => { inp.className = 'main-input'; }, 500);
+        }
+      } else if (currentStep === 'lock5') {
+        if (userVal === 'SABIR') {
+          soundUnlock();
+          locks[4] = true;
+          inp.className = 'main-input success';
+          fb.innerHTML = '<div class="feedback success">✓ Doğru! 5. Kilit Açıldı: Sabır</div>';
+          setTimeout(() => goToStep('final'), 1200);
+        } else {
+          soundError();
+          inp.className = 'main-input error';
+          fb.innerHTML = '<div class="feedback error">✗ Hatalı kelime. Karışık harfleri (R I S B A) doğru sıraya dizerek tekrar dene!</div>';
+          setTimeout(() => { inp.className = 'main-input'; }, 500);
+        }
+      }
+    }
+
+    function goToStep(step) {
+      currentStep = step;
+      renderScreen();
+    }
+
+    function restartGame() {
+      currentStep = 'intro';
+      locks = [false, false, false, false, false];
+      stopConfetti();
+      renderScreen();
+    }
+
+    let confettiTimer = null;
+    function startConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#f59e0b', '#14b8a6', '#06b6d4', '#fbbf24', '#38bdf8', '#e2e8f0'];
+
+      for (let i = 0; i < 140; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: Math.random() * 4 - 2,
+          vy: Math.random() * 3 + 3,
+          rot: Math.random() * 360,
+          vrot: Math.random() * 6 - 3
+        });
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vrot;
+          if (p.y > canvas.height) {
+            p.y = -20;
+            p.x = Math.random() * canvas.width;
+          }
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
+          ctx.restore();
+        });
+        confettiTimer = requestAnimationFrame(render);
+      }
+      render();
+    }
+
+    function stopConfetti() {
+      if (confettiTimer) cancelAnimationFrame(confettiTimer);
+      const canvas = document.getElementById('confettiCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confettiCanvas');
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+
+    renderScreen();
+  </script>
+</body>
+</html>

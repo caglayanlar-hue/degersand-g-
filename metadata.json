@@ -1,0 +1,6 @@
+{
+  "name": "Değer Sandığı - Kriptoloji ve Algoritma Oyunu",
+  "description": "Ortaokul düzeyindeki öğrenciler için akıllı tahta uyumlu interaktif kriptoloji ve algoritma şifre çözme oyunu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
