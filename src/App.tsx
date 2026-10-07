@@ -349,6 +349,7 @@ type StageType = 'intro' | 'lock1' | 'lock2' | 'lock3' | 'lock4' | 'lock5' | 'fi
 export default function App() {
   const [stage, setStage] = useState<StageType>('intro');
   const [locks, setLocks] = useState<boolean[]>([false, false, false, false, false]);
+  const [studentName, setStudentName] = useState<string>('');
   const [inputValue, setInputValue] = useState<string>('');
   const [feedback, setFeedback] = useState<{ type: 'idle' | 'success' | 'error'; message: string }>({
     type: 'idle',
@@ -595,9 +596,12 @@ export default function App() {
     try {
       const isLoaded = await ensureHtml2Pdf();
       if (isLoaded && window.html2pdf) {
+        const cleanName = studentName.trim()
+          ? studentName.trim().replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ_ ]/g, '').replace(/\s+/g, '_')
+          : 'Kisisel';
         const opt = {
           margin: [8, 8, 8, 8],
-          filename: '2027_Degerler_Takvimi.pdf',
+          filename: `2027_Degerler_Takvimi_${cleanName}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: {
             scale: 2,
@@ -814,19 +818,64 @@ export default function App() {
 
             {/* -------------------- STAGE: INTRO -------------------- */}
             {stage === 'intro' && (
-              <div className="w-full max-w-xl bg-gradient-to-b from-indigo-900/90 via-slate-900/95 to-purple-900/90 border-3 border-amber-400 rounded-3xl p-6 sm:p-9 shadow-[0_25px_60px_rgba(245,158,11,0.35)] text-center backdrop-blur-xl">
+              <div className="w-full max-w-2xl bg-gradient-to-b from-indigo-900/95 via-slate-900/95 to-purple-900/95 border-3 border-amber-400 rounded-3xl p-6 sm:p-9 shadow-[0_25px_60px_rgba(245,158,11,0.35)] text-center backdrop-blur-xl">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-slate-950 text-xs font-black mb-4 shadow-lg border border-yellow-200">
                   <Sparkles className="w-4 h-4 animate-spin" />
-                  <span>GİZEMLİ VE RENKLİ DEĞER SANDIĞI</span>
+                  <span>EĞİTSEL KRİPTOLOJİ VE DEĞERLER YOLCULUĞU</span>
                 </div>
 
                 <h1 className="text-2xl sm:text-4xl font-black bg-gradient-to-r from-yellow-200 via-amber-300 to-rose-300 bg-clip-text text-transparent tracking-tight mb-3 drop-shadow">
                   Değer Sandığına Hoş Geldin!
                 </h1>
 
-                <p className="text-cyan-100 text-base sm:text-lg font-bold leading-relaxed mb-7 max-w-md mx-auto">
-                  Şifreleri çöz, sandığı aç ve 2027 Değerler Hazinesine ulaş.
-                </p>
+                {/* Educational Values & Game Description Box */}
+                <div className="bg-slate-950/70 border-2 border-indigo-400/50 rounded-2xl p-4 sm:p-5 text-left mb-6 shadow-inner space-y-3">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">🗝️</span>
+                    <div>
+                      <h4 className="text-amber-300 font-black text-sm sm:text-base">Oyunun Amacı & Kriptoloji Görevi</h4>
+                      <p className="text-slate-200 text-xs sm:text-sm font-medium leading-relaxed">
+                        Bu sandıkta toplumumuzu ayakta tutan en yüce erdemler kilitli! Karşına çıkacak 5 farklı şifreleme algoritmasını (Sezar Kaydırma, Ters Çevirme, Sayı Değiştirme, Akrostiş ve Anagram) analitik zekanla çözerek sandığın kilitlerini tek tek açmalısın.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 pt-2 border-t border-slate-800">
+                    <span className="text-2xl">🌟</span>
+                    <div>
+                      <h4 className="text-cyan-300 font-black text-sm sm:text-base">Milli & Manevi Değerlerimiz ve 2027 Hediyesi</h4>
+                      <p className="text-slate-200 text-xs sm:text-sm font-medium leading-relaxed">
+                        Dürüstlük, yardımlaşma, saygı, vefa ve sabır gibi kadim değerlerimizi keşfettiğinde sandık açılacak; sana ve geleceğine özel hazırlanan <span className="text-yellow-300 font-bold">2027 Değerler Takvimi</span> ortaya çıkacak. Takvimi kendi adınla PDF olarak indirebilirsin!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Student Name Input */}
+                <div className="bg-gradient-to-r from-indigo-950/90 to-purple-950/90 border-2 border-amber-400/80 rounded-2xl p-4 sm:p-5 mb-6 text-left shadow-lg">
+                  <label htmlFor="studentNameInput" className="block text-xs sm:text-sm font-black text-amber-300 mb-2 flex items-center justify-between">
+                    <span>👤 Adınız ve Soyadınız:</span>
+                    <span className="text-[11px] text-cyan-200 font-bold">(Kişiye özel takvim için)</span>
+                  </label>
+                  <input
+                    id="studentNameInput"
+                    type="text"
+                    value={studentName}
+                    onChange={(e) => setStudentName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        sfx.playKey();
+                        setStage('lock1');
+                      }
+                    }}
+                    placeholder="Örn: Ayşe Yılmaz veya 7-B Sınıfı"
+                    className="w-full bg-slate-950/90 border-2 border-amber-300/80 focus:border-yellow-300 focus:ring-2 focus:ring-yellow-300/40 rounded-xl px-4 py-3.5 text-base sm:text-lg font-black text-white placeholder:text-slate-400 outline-none transition-all shadow-inner"
+                    autoComplete="name"
+                  />
+                  <p className="text-[11px] text-slate-300 mt-2 font-medium">
+                    💡 İpucu: İsminizi yazdıktan sonra sandığı açmaya başlayabilirsiniz.
+                  </p>
+                </div>
 
                 <button
                   onClick={() => {
@@ -1067,11 +1116,8 @@ export default function App() {
                   <span className="text-xs font-black text-purple-300 tracking-widest uppercase block mb-2">
                     ŞİFRELİ METİN
                   </span>
-                  <div className="text-xl sm:text-2xl font-black text-purple-200 tracking-wide drop-shadow-[0_0_15px_rgba(168,85,247,0.9)] leading-relaxed">
-                    <span className="text-yellow-300 text-2xl sm:text-3xl font-extrabold underline decoration-yellow-400">V</span>akit{' '}
-                    <span className="text-yellow-300 text-2xl sm:text-3xl font-extrabold underline decoration-yellow-400">E</span>rken{' '}
-                    <span className="text-yellow-300 text-2xl sm:text-3xl font-extrabold underline decoration-yellow-400">F</span>ırtına{' '}
-                    <span className="text-yellow-300 text-2xl sm:text-3xl font-extrabold underline decoration-yellow-400">A</span>kşamı
+                  <div className="text-2xl sm:text-3xl font-black text-purple-100 tracking-wide drop-shadow-[0_0_15px_rgba(168,85,247,0.7)] leading-relaxed">
+                    Vakit Erken Fırtına Akşamı
                   </div>
                 </div>
 
@@ -1247,10 +1293,36 @@ export default function App() {
                     Kriptoloji ve Algoritma Hazinesi • Ortaokul Değerler Eğitimi
                   </p>
                 </div>
-                <span className="text-xs font-black text-slate-950 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 border-2 border-white px-4 py-1.5 rounded-full shadow-lg">
-                  🌟 12 Ay • 12 Erdem
-                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {studentName.trim() && (
+                    <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-slate-950 font-black px-4 py-1.5 rounded-2xl border-2 border-yellow-200 shadow-xl">
+                      <span className="text-xs">🎓 Sahibi:</span>
+                      <span className="text-sm uppercase tracking-wide">{studentName.trim()}</span>
+                    </div>
+                  )}
+                  <span className="text-xs font-black text-slate-950 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 border-2 border-white px-4 py-1.5 rounded-full shadow-lg">
+                    🌟 12 Ay • 12 Erdem
+                  </span>
+                </div>
               </div>
+
+              {/* Personalized Dedicated Certificate Banner in Calendar */}
+              {studentName.trim() && (
+                <div className="mb-5 bg-gradient-to-r from-indigo-950/90 via-purple-950/90 to-indigo-950/90 border-2 border-amber-300/80 rounded-2xl px-5 py-3.5 flex items-center justify-between flex-wrap gap-3 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">🏅</span>
+                    <div>
+                      <div className="text-xs font-bold text-cyan-300 uppercase tracking-widest">Kişiye Özel Başarı Belgesi & Takvim</div>
+                      <div className="text-base sm:text-lg font-black text-white">
+                        Tebrikler, <span className="text-amber-300 underline decoration-yellow-400 font-extrabold">{studentName.trim()}</span>! 5 algoritma kilidini başarıyla çözerek bu takvimi kazandınız.
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs font-black text-yellow-300 bg-amber-950/80 border border-amber-400 px-3 py-1.5 rounded-xl shadow-inner">
+                    ✨ 2027 Rehber Takvimi
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {MONTHS_2027.map((m) => (
@@ -1296,7 +1368,9 @@ export default function App() {
 
               {/* Bottom Print Footer */}
               <div className="mt-6 pt-4 border-t-2 border-indigo-500/40 flex flex-col sm:flex-row items-center justify-between text-xs text-cyan-100 font-black gap-2">
-                <span>Değer Sandığı • 2027 Değerler Takvimi</span>
+                <span>
+                  Değer Sandığı • 2027 Değerler Takvimi {studentName.trim() ? `• Hazırlayan: ${studentName.trim()}` : ''}
+                </span>
                 <span className="text-yellow-300 font-black">
                   "Dürüstlük · Yardımlaşma · Saygı · Vefa · Sabır"
                 </span>
