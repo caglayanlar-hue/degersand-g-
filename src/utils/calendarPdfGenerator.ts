@@ -6,7 +6,8 @@ export interface MonthDataForPdf {
   value: string;
   quote: string;
   author: string;
-  guideline: string;
+  startDay: number; // 0 = Pt, 1 = Sa, 2 = Ça, 3 = Pe, 4 = Cu, 5 = Ct, 6 = Pz
+  daysCount: number;
 }
 
 // 12 Distinct High-Contrast Color Palettes for the 12 Months
@@ -31,6 +32,8 @@ const MONTH_PALETTES: Record<number, {
   11: { bgTop: '#701a75', bgBottom: '#4a044e', border: '#c026d3', badgeBg: 'rgba(192,38,211,0.35)', badgeText: '#fae8ff', title: '#f5d0fe' }, // Kasım - Empati (Fuchsia)
   12: { bgTop: '#155e75', bgBottom: '#083344', border: '#0891b2', badgeBg: 'rgba(8,145,178,0.35)', badgeText: '#cffafe', title: '#a5f3fc' }, // Aralık - Umut (Cyan)
 };
+
+const DAY_LABELS = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
 
 // Canvas Helper: Draw Rounded Rectangle
 function drawRoundedRect(
@@ -100,14 +103,14 @@ function wrapText(
 }
 
 /**
- * Generates a razor-sharp, strictly single-page A4 Portrait PDF of the 2027 Values Calendar.
- * Pure Canvas 2D + jsPDF: Zero CSS dependencies, zero oklch issues, guaranteed to download.
+ * Generates an authentic, real-date 2027 Family & Values Calendar (Tek Sayfa A4 Dikey).
+ * Includes real calendar days (1..31), weekday headers (Pt..Pz), inspiring quotes, without guide section.
  */
 export async function generateAndDownloadCalendarPdf(
   studentName: string,
   months: MonthDataForPdf[]
 ): Promise<void> {
-  // A4 Portrait Aspect Ratio: 1600 x 2263 px
+  // A4 Portrait Resolution: 1600 x 2263 px (Exact 1:1.414 A4 Ratio)
   const width = 1600;
   const height = 2263;
 
@@ -131,24 +134,24 @@ export async function generateAndDownloadCalendarPdf(
   // 2. Top Header Area (Height: 140px)
   const headerY = 40;
 
-  // Title: "2027 YILI DEĞERLER VE BİLGELİK TAKVİMİ"
+  // Title: "2027 YILI AİLE VE DEĞERLER TAKVİMİ"
   ctx.save();
   ctx.font = '900 32px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#fbbf24'; // Warm Gold
-  ctx.fillText('2027 YILI DEĞERLER VE BİLGELİK TAKVİMİ', 42, headerY + 36);
+  ctx.fillText('2027 YILI AİLE VE DEĞERLER TAKVİMİ', 42, headerY + 36);
 
   // Subtitle
   ctx.font = '700 16px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#67e8f9'; // Cyan
-  ctx.fillText('Kriptoloji ve Algoritma Hazinesi • 12 Erdem & Bilgelik Rehberi', 42, headerY + 68);
+  ctx.fillText('Milli ve Manevi Değerlerimizle Dolu Bir Yıl • 12 Ayın Erdemleri ve Bilgelik Sözleri', 42, headerY + 68);
   ctx.restore();
 
   // Right Side Badges
   const cleanOwner = studentName.trim();
   let rightOffset = width - 42;
 
-  // Year Badge: "🌟 2027 • 12 Erdem"
-  const yearBadgeText = '🌟 2027 • 12 Erdem';
+  // Year Badge: "🌟 2027 Aile Takvimi"
+  const yearBadgeText = '🌟 2027 Aile Takvimi';
   ctx.font = '900 14px system-ui, -apple-system, sans-serif';
   const yearBadgeWidth = ctx.measureText(yearBadgeText).width + 24;
   rightOffset -= yearBadgeWidth;
@@ -228,70 +231,103 @@ export async function generateAndDownloadCalendarPdf(
 
     // Horizontal Card Divider
     ctx.beginPath();
-    ctx.moveTo(innerX, y + 38);
-    ctx.lineTo(innerX + innerW, y + 38);
+    ctx.moveTo(innerX, y + 36);
+    ctx.lineTo(innerX + innerW, y + 36);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
     ctx.lineWidth = 1;
     ctx.stroke();
 
     // Line 2: Prominent Value Title
     ctx.save();
-    ctx.font = '900 20px system-ui, -apple-system, sans-serif';
+    ctx.font = '900 19px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = palette.title;
-    ctx.fillText(m.value, innerX, y + 64);
+    ctx.fillText(m.value, innerX, y + 59);
     ctx.restore();
 
     // Line 3: Quote (Italic Wrapped Text)
     ctx.save();
-    ctx.font = 'italic 500 13.5px Georgia, serif';
+    ctx.font = 'italic 500 12.5px Georgia, serif';
     ctx.fillStyle = '#ffffff';
     const quoteLines = wrapText(ctx, `"${m.quote}"`, innerW);
-    let quoteY = y + 88;
-    for (let l = 0; l < Math.min(quoteLines.length, 4); l++) {
+    let quoteY = y + 78;
+    for (let l = 0; l < Math.min(quoteLines.length, 3); l++) {
       ctx.fillText(quoteLines[l], innerX, quoteY);
-      quoteY += 19;
+      quoteY += 17;
     }
     ctx.restore();
 
-    // Line 4: Guideline Box
-    const guideBoxY = y + 185;
-    const guideBoxH = cardHeight - 240;
-    drawRoundedRect(ctx, innerX, guideBoxY, innerW, guideBoxH, 10, 'rgba(0, 0, 0, 0.45)', palette.border, 1);
+    // Line 4: REAL 2027 CALENDAR DAYS TABLE (Replaces Rehber box)
+    const calBoxY = y + 138;
+    const calBoxH = cardHeight - 176; // ~322px
+    drawRoundedRect(ctx, innerX, calBoxY, innerW, calBoxH, 10, 'rgba(0, 0, 0, 0.52)', palette.border, 1);
 
+    const cellW = innerW / 7;
+
+    // Weekday Header Row
     ctx.save();
-    // Guideline Header
-    ctx.font = '900 12.5px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = '#fde047';
-    ctx.fillText('📌 2027 Rehber İlke:', innerX + 12, guideBoxY + 22);
+    ctx.font = '900 11.5px monospace, system-ui, sans-serif';
+    ctx.textAlign = 'center';
 
-    // Guideline Text
-    ctx.font = '600 13px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = '#f1f5f9';
-    const guideLines = wrapText(ctx, m.guideline, innerW - 24);
-    let gLineY = guideBoxY + 44;
-    for (let gl = 0; gl < Math.min(guideLines.length, 4); gl++) {
-      ctx.fillText(guideLines[gl], innerX + 12, gLineY);
-      gLineY += 19;
+    for (let d = 0; d < 7; d++) {
+      const headerCenterX = innerX + d * cellW + cellW / 2;
+      if (d === 6) {
+        ctx.fillStyle = '#fb7185'; // Sunday (Rose)
+      } else if (d === 5) {
+        ctx.fillStyle = '#67e8f9'; // Saturday (Cyan)
+      } else {
+        ctx.fillStyle = '#cbd5e1'; // Mon-Fri (Silver)
+      }
+      ctx.fillText(DAY_LABELS[d], headerCenterX, calBoxY + 19);
     }
-    ctx.restore();
 
-    // Card Footer: Author & Year
-    const cardFootY = y + cardHeight - 16;
-    ctx.save();
+    // Divider under Weekdays
     ctx.beginPath();
-    ctx.moveTo(innerX, cardFootY - 18);
-    ctx.lineTo(innerX + innerW, cardFootY - 18);
+    ctx.moveTo(innerX + 6, calBoxY + 26);
+    ctx.lineTo(innerX + innerW - 6, calBoxY + 26);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    ctx.font = '800 13px system-ui, -apple-system, sans-serif';
+    // Calendar Day Numbers (1 to m.daysCount)
+    ctx.font = '800 13px monospace, system-ui, sans-serif';
+
+    for (let dayNum = 1; dayNum <= m.daysCount; dayNum++) {
+      const slot = m.startDay + (dayNum - 1);
+      const colIndex = slot % 7;
+      const rowIndex = Math.floor(slot / 7);
+
+      const numCenterX = innerX + colIndex * cellW + cellW / 2;
+      const numY = calBoxY + 50 + rowIndex * 24;
+
+      if (colIndex === 6) {
+        ctx.fillStyle = '#fb7185'; // Sunday in Rose Red
+      } else if (colIndex === 5) {
+        ctx.fillStyle = '#67e8f9'; // Saturday in Cyan
+      } else {
+        ctx.fillStyle = '#f8fafc'; // Regular days
+      }
+
+      ctx.fillText(dayNum.toString(), numCenterX, numY);
+    }
+    ctx.restore();
+
+    // Card Footer: Author & Year
+    const cardFootY = y + cardHeight - 12;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(innerX, cardFootY - 14);
+    ctx.lineTo(innerX + innerW, cardFootY - 14);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.font = '800 12.5px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = '#fef08a';
     ctx.fillText(`— ${m.author}`, innerX, cardFootY);
 
-    ctx.font = '800 13px monospace';
+    ctx.font = '800 12.5px monospace';
     ctx.fillStyle = '#94a3b8';
-    ctx.fillText('2027', x + cardWidth - 52, cardFootY);
+    ctx.fillText('2027', x + cardWidth - 48, cardFootY);
     ctx.restore();
   }
 
@@ -307,7 +343,7 @@ export async function generateAndDownloadCalendarPdf(
   ctx.save();
   ctx.font = '700 13px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#67e8f9';
-  const footerLeft = `Değer Sandığı • 2027 Değerler Takvimi${cleanOwner ? ` • Takvim Sahibi: ${cleanOwner}` : ''}`;
+  const footerLeft = `Değer Sandığı • 2027 Aile ve Değerler Takvimi${cleanOwner ? ` • Takvim Sahibi: ${cleanOwner}` : ''}`;
   ctx.fillText(footerLeft, 42, footerY);
 
   ctx.font = '700 13px system-ui, -apple-system, sans-serif';
@@ -334,7 +370,7 @@ export async function generateAndDownloadCalendarPdf(
   const cleanFileName = cleanOwner
     ? cleanOwner.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ_ ]/g, '').replace(/\s+/g, '_')
     : 'Kisisel';
-  const fileName = `2027_Tek_Sayfa_Degerler_Takvimi_${cleanFileName}.pdf`;
+  const fileName = `2027_Tek_Sayfa_Aile_Degerler_Takvimi_${cleanFileName}.pdf`;
 
   // Method 1: Standard jsPDF file save
   pdf.save(fileName);

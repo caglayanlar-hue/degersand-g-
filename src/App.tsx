@@ -25,21 +25,21 @@ import {
 import { CaesarWheelModal } from './components/CaesarWheelModal';
 import { generateAndDownloadCalendarPdf } from './utils/calendarPdfGenerator';
 
-// 12 Months 2027 Values & Wisdom with Vivid Multi-Color Themes
+// 12 Months 2027 Values & Real Calendar Days
 interface MonthData {
   index: number;
   month: string;
   value: string;
   quote: string;
   author: string;
-  guideline: string;
+  startDay: number; // 0 = Pt, 1 = Sa, 2 = Ça, 3 = Pe, 4 = Cu, 5 = Ct, 6 = Pz
+  daysCount: number;
   cardBg: string;
   borderColor: string;
   badgeBg: string;
   badgeBorder: string;
   badgeText: string;
   titleColor: string;
-  guidelineBg: string;
 }
 
 const MONTHS_2027: MonthData[] = [
@@ -49,14 +49,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Dürüstlük',
     quote: 'Cümleler doğrudur sen doğru isen, doğruluk bulunmaz sen eğri isen.',
     author: 'Yunus Emre',
-    guideline: 'Sözde, işte ve niyette her zaman doğru ve ilkeli olmak.',
+    startDay: 4,
+    daysCount: 31,
     cardBg: 'bg-gradient-to-br from-[#991b1b] via-[#7f1d1d] to-[#450a0a]',
     borderColor: 'border-rose-400/90 hover:border-white',
     badgeBg: 'bg-rose-500/40',
     badgeBorder: 'border-rose-300',
     badgeText: 'text-rose-100',
-    titleColor: 'text-rose-200',
-    guidelineBg: 'bg-black/35 border-rose-400/50 text-rose-100'
+    titleColor: 'text-rose-200'
   },
   {
     index: 2,
@@ -64,14 +64,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Yardımlaşma',
     quote: 'Bir elin nesi var, iki elin sesi var. Birlikten kuvvet doğar.',
     author: 'Geleneksel Atasözü',
-    guideline: 'Zorlukları dayanışma ve kardeşlikle omuz omuza aşmak.',
+    startDay: 0,
+    daysCount: 28,
     cardBg: 'bg-gradient-to-br from-[#065f46] via-[#064e3b] to-[#022c22]',
     borderColor: 'border-emerald-400/90 hover:border-white',
     badgeBg: 'bg-emerald-500/40',
     badgeBorder: 'border-emerald-300',
     badgeText: 'text-emerald-100',
-    titleColor: 'text-emerald-200',
-    guidelineBg: 'bg-black/35 border-emerald-400/50 text-emerald-100'
+    titleColor: 'text-emerald-200'
   },
   {
     index: 3,
@@ -79,14 +79,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Saygı, Sevgi ve Merhamet',
     quote: 'Yaratılanı hoş gör, Yaradan’dan ötürü. Gönüller sevgi ve merhametle birleşir, saygıyla yücelir.',
     author: 'Yunus Emre',
-    guideline: 'Farklılıklara saygı duymak, her canlıya derin sevgi ve merhametle yaklaşmak.',
+    startDay: 0,
+    daysCount: 31,
     cardBg: 'bg-gradient-to-br from-[#0369a1] via-[#075985] to-[#082f49]',
     borderColor: 'border-sky-400/90 hover:border-white',
     badgeBg: 'bg-sky-500/40',
     badgeBorder: 'border-sky-300',
     badgeText: 'text-sky-100',
-    titleColor: 'text-sky-200',
-    guidelineBg: 'bg-black/35 border-sky-400/50 text-sky-100'
+    titleColor: 'text-sky-200'
   },
   {
     index: 4,
@@ -94,14 +94,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Vefa',
     quote: 'Vefa; hatırlamak değil, hiç unutmamaktır. Emek ve sevgi kutsaldır.',
     author: 'Geleneksel Hikmet',
-    guideline: 'Verilen emeği, dostluğu ve iyiliği ömür boyu aziz bilmek.',
+    startDay: 3,
+    daysCount: 30,
     cardBg: 'bg-gradient-to-br from-[#6d28d9] via-[#4c1d95] to-[#2e1065]',
     borderColor: 'border-purple-400/90 hover:border-white',
     badgeBg: 'bg-purple-500/40',
     badgeBorder: 'border-purple-300',
     badgeText: 'text-purple-100',
-    titleColor: 'text-purple-200',
-    guidelineBg: 'bg-black/35 border-purple-400/50 text-purple-100'
+    titleColor: 'text-purple-200'
   },
   {
     index: 5,
@@ -109,14 +109,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Sabır',
     quote: 'Sabır acıdır, lakin meyvesi pek tatlıdır.',
     author: 'Sâdi-i Şîrâzî',
-    guideline: 'Hedefe ulaşırken azimle ve metanetle yola devam etmek.',
+    startDay: 5,
+    daysCount: 31,
     cardBg: 'bg-gradient-to-br from-[#b45309] via-[#78350f] to-[#451a03]',
     borderColor: 'border-amber-400/90 hover:border-white',
     badgeBg: 'bg-amber-500/40',
     badgeBorder: 'border-amber-300',
     badgeText: 'text-amber-100',
-    titleColor: 'text-amber-200',
-    guidelineBg: 'bg-black/35 border-amber-400/50 text-amber-100'
+    titleColor: 'text-amber-200'
   },
   {
     index: 6,
@@ -124,14 +124,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Sevgi',
     quote: 'Sevelim sevilelim, bu dünya kimseye kalmaz.',
     author: 'Yunus Emre',
-    guideline: 'Gönülleri birleştiren en büyük gücün karşılıksız sevgi olduğunu bilmek.',
+    startDay: 1,
+    daysCount: 30,
     cardBg: 'bg-gradient-to-br from-[#be185d] via-[#831843] to-[#500724]',
     borderColor: 'border-pink-400/90 hover:border-white',
     badgeBg: 'bg-pink-500/40',
     badgeBorder: 'border-pink-300',
     badgeText: 'text-pink-100',
-    titleColor: 'text-pink-200',
-    guidelineBg: 'bg-black/35 border-pink-400/50 text-pink-100'
+    titleColor: 'text-pink-200'
   },
   {
     index: 7,
@@ -139,14 +139,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Adalet',
     quote: 'Adalet kutup yıldızı gibi yerinde durur ve her şey onun etrafında döner.',
     author: 'Konfüçyüs',
-    guideline: 'Her durumda haklının yanında olmak, hakkaniyeti üstün tutmak.',
+    startDay: 3,
+    daysCount: 31,
     cardBg: 'bg-gradient-to-br from-[#1d4ed8] via-[#1e3a8a] to-[#172554]',
     borderColor: 'border-blue-400/90 hover:border-white',
     badgeBg: 'bg-blue-500/40',
     badgeBorder: 'border-blue-300',
     badgeText: 'text-blue-100',
-    titleColor: 'text-blue-200',
-    guidelineBg: 'bg-black/35 border-blue-400/50 text-blue-100'
+    titleColor: 'text-blue-200'
   },
   {
     index: 8,
@@ -154,14 +154,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Hoşgörü',
     quote: 'Ne olursan ol, yine gel... Bizim dergâhımız ümitsizlik dergâhı değildir.',
     author: 'Mevlâna Celâleddîn-i Rûmî',
-    guideline: 'Hataları affetme olgunluğu ve geniş bir yürekle kucak açmak.',
+    startDay: 6,
+    daysCount: 31,
     cardBg: 'bg-gradient-to-br from-[#0f766e] via-[#115e59] to-[#042f2e]',
     borderColor: 'border-teal-400/90 hover:border-white',
     badgeBg: 'bg-teal-500/40',
     badgeBorder: 'border-teal-300',
     badgeText: 'text-teal-100',
-    titleColor: 'text-teal-200',
-    guidelineBg: 'bg-black/35 border-teal-400/50 text-teal-100'
+    titleColor: 'text-teal-200'
   },
   {
     index: 9,
@@ -169,14 +169,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Cesaret',
     quote: 'Cesaret, hak bildiğin yolda korkuyu bilgi ve inançla aşmaktır.',
     author: 'Bilgelik Öğüdü',
-    guideline: 'Doğru olanı savunmaktan ve yeni ufuklara adım atmaktan çekinmemek.',
+    startDay: 2,
+    daysCount: 30,
     cardBg: 'bg-gradient-to-br from-[#be123c] via-[#881337] to-[#4c0519]',
     borderColor: 'border-red-400/90 hover:border-white',
     badgeBg: 'bg-red-500/40',
     badgeBorder: 'border-red-300',
     badgeText: 'text-red-100',
-    titleColor: 'text-red-200',
-    guidelineBg: 'bg-black/35 border-red-400/50 text-red-100'
+    titleColor: 'text-red-200'
   },
   {
     index: 10,
@@ -184,14 +184,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Sorumluluk',
     quote: 'Yalnızca yaptıklarımızdan değil, yapmadıklarımızdan da mesulüz.',
     author: 'Molière',
-    guideline: 'Vazifelerini zamanında yerine getirip çevrene ve topluma sahip çıkmak.',
+    startDay: 4,
+    daysCount: 31,
     cardBg: 'bg-gradient-to-br from-[#4338ca] via-[#312e81] to-[#1e1b4b]',
     borderColor: 'border-indigo-400/90 hover:border-white',
     badgeBg: 'bg-indigo-500/40',
     badgeBorder: 'border-indigo-300',
     badgeText: 'text-indigo-100',
-    titleColor: 'text-indigo-200',
-    guidelineBg: 'bg-black/35 border-indigo-400/50 text-indigo-100'
+    titleColor: 'text-indigo-200'
   },
   {
     index: 11,
@@ -199,14 +199,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Empati',
     quote: 'Damdan düşenin halini, ancak damdan düşen anlar.',
     author: 'Nasreddin Hoca',
-    guideline: 'Kendini başkalarının yerine koyabilmek ve dertlerine ortak olmak.',
+    startDay: 0,
+    daysCount: 30,
     cardBg: 'bg-gradient-to-br from-[#a21caf] via-[#701a75] to-[#4a044e]',
     borderColor: 'border-fuchsia-400/90 hover:border-white',
     badgeBg: 'bg-fuchsia-500/40',
     badgeBorder: 'border-fuchsia-300',
     badgeText: 'text-fuchsia-100',
-    titleColor: 'text-fuchsia-200',
-    guidelineBg: 'bg-black/35 border-fuchsia-400/50 text-fuchsia-100'
+    titleColor: 'text-fuchsia-200'
   },
   {
     index: 12,
@@ -214,14 +214,14 @@ const MONTHS_2027: MonthData[] = [
     value: 'Umut',
     quote: 'Gecenin en karanlık anı, şafağa en yakın zamandır.',
     author: 'Geleneksel Hikmet',
-    guideline: 'Yarınlara daima aydınlık bir inanç ve heyecanla bakmak.',
+    startDay: 2,
+    daysCount: 31,
     cardBg: 'bg-gradient-to-br from-[#0e7490] via-[#155e75] to-[#083344]',
     borderColor: 'border-cyan-400/90 hover:border-white',
     badgeBg: 'bg-cyan-500/40',
     badgeBorder: 'border-cyan-300',
     badgeText: 'text-cyan-100',
-    titleColor: 'text-cyan-200',
-    guidelineBg: 'bg-black/35 border-cyan-400/50 text-cyan-100'
+    titleColor: 'text-cyan-200'
   }
 ];
 
@@ -1511,10 +1511,10 @@ export default function App() {
                   <span className="text-xs text-indigo-300 font-bold bg-indigo-950/80 px-2.5 py-0.5 rounded-lg border border-indigo-800">Yıl 2027</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-amber-300 via-rose-300 to-cyan-300 bg-clip-text text-transparent tracking-tight">
-                  2027 Değerler Takvimi
+                  2027 Aile ve Değerler Takvimi
                 </h1>
                 <p className="text-xs sm:text-sm text-indigo-200/90 font-bold">
-                  12 Aya ait kadim erdemler, bilgelik sözleri ve rehber ilkeler.
+                  12 Aya ait gerçek takvim günleri, kadim erdemler ve bilgelik sözleri.
                 </p>
               </div>
 
@@ -1523,10 +1523,10 @@ export default function App() {
                   onClick={handleDownloadPdf}
                   disabled={isGeneratingPdf}
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-orange-500/30 hover:scale-[1.03] active:scale-[0.98] transition-all flex items-center gap-2.5 cursor-pointer disabled:opacity-60 border border-yellow-200"
-                  title="2027 Takvimini A4 tek sayfa PDF olarak indir"
+                  title="2027 Aile Takvimini A4 tek sayfa PDF olarak indir"
                 >
                   <FileDown className="w-4 h-4 stroke-[2.5]" />
-                  <span>{isGeneratingPdf ? '⏳ PDF Hazırlanıyor ve İndiriliyor...' : '📥 2027 Takvimini PDF Olarak İndir'}</span>
+                  <span>{isGeneratingPdf ? '⏳ PDF Hazırlanıyor ve İndiriliyor...' : '📥 2027 Aile Takvimini PDF Olarak İndir'}</span>
                 </button>
 
                 <button
@@ -1546,7 +1546,7 @@ export default function App() {
                 <div className="flex items-center gap-2.5">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
                   <span className="text-xs sm:text-sm font-black">
-                    🎉 2027 Değerler Takvimi (Tek Sayfa A4 PDF) başarıyla indirildi!
+                    🎉 2027 Aile ve Değerler Takvimi (Tek Sayfa A4 PDF) başarıyla indirildi!
                   </span>
                 </div>
                 <span className="text-xs font-bold text-emerald-300 bg-emerald-900/60 px-2.5 py-1 rounded-lg border border-emerald-500/40 shrink-0 hidden sm:inline-block">
@@ -1583,10 +1583,10 @@ export default function App() {
               <div className="mb-2.5 pb-2 border-b border-indigo-500/40 flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-yellow-300 via-amber-300 to-cyan-300 bg-clip-text text-transparent leading-tight drop-shadow">
-                    2027 YILI DEĞERLER VE BİLGELİK TAKVİMİ
+                    2027 YILI AİLE VE DEĞERLER TAKVİMİ
                   </h2>
                   <p className="text-[10px] sm:text-[11px] text-cyan-200 font-bold">
-                    Kriptoloji ve Algoritma Hazinesi • 12 Erdem & Bilgelik Rehberi
+                    Milli ve Manevi Değerlerimiz • 12 Ayın Erdemleri ve Bilgelik Sözleri
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1597,7 +1597,7 @@ export default function App() {
                     </div>
                   )}
                   <span className="text-[10px] sm:text-xs font-black text-slate-950 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 border border-white px-2.5 py-0.5 rounded-full shadow-md">
-                    🌟 2027 • 12 Erdem
+                    🌟 2027 • Aile Takvimi
                   </span>
                 </div>
               </div>
@@ -1630,9 +1630,41 @@ export default function App() {
                         "{m.quote}"
                       </p>
 
-                      {/* Monthly Wisdom Guideline */}
-                      <div className={`text-[8px] sm:text-[8.5px] font-bold ${m.guidelineBg} border rounded-lg p-1 leading-tight`}>
-                        <span className="font-black text-yellow-300">📌 Rehber:</span> {m.guideline}
+                      {/* Real 2027 Calendar Days Table (Pt-Pz) */}
+                      <div className="bg-black/50 border border-white/20 rounded-lg p-1.5 my-1">
+                        <div className="grid grid-cols-7 text-center text-[7.5px] sm:text-[8px] font-black mb-1 border-b border-white/15 pb-0.5">
+                          <span className="text-slate-300">Pt</span>
+                          <span className="text-slate-300">Sa</span>
+                          <span className="text-slate-300">Ça</span>
+                          <span className="text-slate-300">Pe</span>
+                          <span className="text-slate-300">Cu</span>
+                          <span className="text-cyan-300">Ct</span>
+                          <span className="text-rose-400">Pz</span>
+                        </div>
+                        <div className="grid grid-cols-7 gap-y-0.5 text-center text-[7.5px] sm:text-[8px] font-mono leading-none">
+                          {Array.from({ length: m.startDay }).map((_, i) => (
+                            <span key={`empty-${i}`} className="text-transparent select-none">•</span>
+                          ))}
+                          {Array.from({ length: m.daysCount }).map((_, i) => {
+                            const dayNum = i + 1;
+                            const isSunday = (m.startDay + i) % 7 === 6;
+                            const isSaturday = (m.startDay + i) % 7 === 5;
+                            return (
+                              <span
+                                key={`day-${dayNum}`}
+                                className={`py-0.5 font-bold ${
+                                  isSunday
+                                    ? 'text-rose-400 font-black'
+                                    : isSaturday
+                                    ? 'text-cyan-300'
+                                    : 'text-white/95'
+                                }`}
+                              >
+                                {dayNum}
+                              </span>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
 
@@ -1645,10 +1677,10 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Bottom Print Footer (Strictly No "Hazırlayan", displays owner if provided) */}
+              {/* Bottom Print Footer */}
               <div className="mt-2 pt-1.5 border-t border-indigo-500/40 flex items-center justify-between text-[9px] sm:text-[10px] text-cyan-200 font-bold gap-2">
                 <span>
-                  Değer Sandığı • 2027 Değerler Takvimi {studentName.trim() ? `• Takvim Sahibi: ${studentName.trim()}` : ''}
+                  Değer Sandığı • 2027 Aile ve Değerler Takvimi {studentName.trim() ? `• Takvim Sahibi: ${studentName.trim()}` : ''}
                 </span>
                 <span className="text-yellow-300 font-bold">
                   "Dürüstlük · Yardımlaşma · Saygı, Sevgi ve Merhamet · Vefa · Sabır"
