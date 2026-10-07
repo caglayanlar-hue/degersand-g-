@@ -21,12 +21,8 @@ import {
   HelpCircle,
   ArrowRight
 } from 'lucide-react';
-
-declare global {
-  interface Window {
-    html2pdf?: any;
-  }
-}
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // 12 Months 2027 Values & Wisdom with Vivid Multi-Color Themes
 interface MonthData {
@@ -565,27 +561,7 @@ export default function App() {
     }
   };
 
-  // Helper to ensure html2pdf is loaded
-  const ensureHtml2Pdf = async (): Promise<boolean> => {
-    if (typeof window !== 'undefined' && window.html2pdf) return true;
-    return new Promise((resolve) => {
-      const existing = document.querySelector('script[src*="html2pdf"]');
-      if (existing) {
-        if (window.html2pdf) return resolve(true);
-        existing.addEventListener('load', () => resolve(!!window.html2pdf));
-        setTimeout(() => resolve(!!window.html2pdf), 2000);
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      script.onload = () => resolve(!!window.html2pdf);
-      script.onerror = () => resolve(false);
-      document.head.appendChild(script);
-      setTimeout(() => resolve(!!window.html2pdf), 2500);
-    });
-  };
-
-  // PDF Export via html2pdf.js
+  // Single-Page Vertical (Portrait) PDF Export via html2canvas & jsPDF
   const handleDownloadPdf = async () => {
     sfx.playKey();
     const element = calendarPrintRef.current;
@@ -594,27 +570,53 @@ export default function App() {
     setIsGeneratingPdf(true);
 
     try {
-      const isLoaded = await ensureHtml2Pdf();
-      if (isLoaded && window.html2pdf) {
-        const cleanName = studentName.trim()
-          ? studentName.trim().replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ_ ]/g, '').replace(/\s+/g, '_')
-          : 'Kisisel';
-        const opt = {
-          margin: [8, 8, 8, 8],
-          filename: `2027_Degerler_Takvimi_${cleanName}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#070b14'
-          },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-        await window.html2pdf().set(opt).from(element).save();
-      } else {
-        window.print();
+      // High-resolution canvas capture with full styling preserved
+      const canvas = await html2canvas(element, {
+        scale: 2.2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#0a0f1d'
+      });
+
+      // Strict single-page A4 Portrait (Dikey) PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+
+      const pageWidth = 210; // A4 portrait width in mm
+      const pageHeight = 297; // A4 portrait height in mm
+      const margin = 6; // 6mm sleek margin
+      const maxWidth = pageWidth - margin * 2; // 198mm
+      const maxHeight = pageHeight - margin * 2; // 285mm
+
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const canvasRatio = canvasWidth / canvasHeight;
+
+      // Fit strictly within 1 single A4 portrait page
+      let renderWidth = maxWidth;
+      let renderHeight = renderWidth / canvasRatio;
+
+      if (renderHeight > maxHeight) {
+        renderHeight = maxHeight;
+        renderWidth = renderHeight * canvasRatio;
       }
+
+      // Centered on the single vertical A4 page
+      const posX = (pageWidth - renderWidth) / 2;
+      const posY = (pageHeight - renderHeight) / 2;
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.96);
+      pdf.addImage(imgData, 'JPEG', posX, posY, renderWidth, renderHeight, undefined, 'FAST');
+
+      const cleanName = studentName.trim()
+        ? studentName.trim().replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ_ ]/g, '').replace(/\s+/g, '_')
+        : 'Kisisel';
+
+      pdf.save(`2027_Dikey_Degerler_Takvimi_${cleanName}.pdf`);
     } catch (err) {
       console.error('PDF indirme hatası:', err);
       window.print();
@@ -845,7 +847,7 @@ export default function App() {
                     <div>
                       <h4 className="text-cyan-300 font-black text-sm sm:text-base">Milli & Manevi Değerlerimiz ve 2027 Hediyesi</h4>
                       <p className="text-slate-200 text-xs sm:text-sm font-medium leading-relaxed">
-                        Dürüstlük, yardımlaşma, saygı, vefa ve sabır gibi kadim değerlerimizi keşfettiğinde sandık açılacak; sana ve geleceğine özel hazırlanan <span className="text-yellow-300 font-bold">2027 Değerler Takvimi</span> ortaya çıkacak. Takvimi kendi adınla PDF olarak indirebilirsin!
+                        Kilitlerin ardındaki kadim değerlerimizi ve erdemlerimizi şifreleri çözerek keşfettiğinde sandık açılacak; sana ve geleceğine özel hazırlanan <span className="text-yellow-300 font-bold">2027 Değerler Takvimi</span> ortaya çıkacak. Takvimi kendi adınla PDF olarak tek sayfada indirebilirsin!
                       </p>
                     </div>
                   </div>
@@ -1265,7 +1267,7 @@ export default function App() {
                   className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-slate-950 font-black text-sm shadow-xl shadow-orange-500/30 hover:scale-[1.03] active:scale-[0.98] transition-all flex items-center gap-2.5 cursor-pointer disabled:opacity-60"
                 >
                   <FileDown className="w-5 h-5 stroke-[2.5]" />
-                  <span>{isGeneratingPdf ? '⏳ PDF Hazırlanıyor...' : '📥 Takvimi PDF Olarak İndir'}</span>
+                  <span>{isGeneratingPdf ? '⏳ Tek Sayfa Dikey PDF Hazırlanıyor...' : '📥 Tek Sayfa Dikey PDF İndir'}</span>
                 </button>
 
                 <button
@@ -1278,25 +1280,25 @@ export default function App() {
               </div>
             </div>
 
-            {/* 2027 VALUES CALENDAR PRINT AREA (No day numbers/schedule grid) */}
+            {/* 2027 VALUES CALENDAR PRINT AREA (Vertical / Dikey Single-Page Layout) */}
             <div
               ref={calendarPrintRef}
               id="calendarPrintTarget"
-              className="w-full bg-slate-900/90 border-3 border-indigo-400/80 rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur-xl"
+              className="w-full max-w-4xl bg-slate-900/95 border-3 border-indigo-400/80 rounded-3xl p-4 sm:p-6 shadow-2xl backdrop-blur-xl"
             >
-              <div className="mb-5 pb-4 border-b-2 border-indigo-500/40 flex items-center justify-between flex-wrap gap-3">
+              <div className="mb-4 pb-3 border-b-2 border-indigo-500/40 flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <h2 className="text-xl sm:text-3xl font-black bg-gradient-to-r from-yellow-300 via-amber-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent drop-shadow">
+                  <h2 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-yellow-300 via-amber-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent drop-shadow">
                     2027 Yılı Değerler ve Bilgelik Takvimi
                   </h2>
                   <p className="text-xs sm:text-sm text-cyan-200 font-bold">
-                    Kriptoloji ve Algoritma Hazinesi • Ortaokul Değerler Eğitimi
+                    Kriptoloji ve Algoritma Hazinesi • 12 Erdem & Bilgelik Rehberi
                   </p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   {studentName.trim() && (
                     <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-slate-950 font-black px-4 py-1.5 rounded-2xl border-2 border-yellow-200 shadow-xl">
-                      <span className="text-xs">🎓 Sahibi:</span>
+                      <span className="text-xs">🎓 Takvim Sahibi:</span>
                       <span className="text-sm uppercase tracking-wide">{studentName.trim()}</span>
                     </div>
                   )}
@@ -1308,57 +1310,58 @@ export default function App() {
 
               {/* Personalized Dedicated Certificate Banner in Calendar */}
               {studentName.trim() && (
-                <div className="mb-5 bg-gradient-to-r from-indigo-950/90 via-purple-950/90 to-indigo-950/90 border-2 border-amber-300/80 rounded-2xl px-5 py-3.5 flex items-center justify-between flex-wrap gap-3 shadow-lg">
+                <div className="mb-4 bg-gradient-to-r from-indigo-950/90 via-purple-950/90 to-indigo-950/90 border-2 border-amber-300/80 rounded-2xl px-4 py-3 flex items-center justify-between flex-wrap gap-3 shadow-lg">
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">🏅</span>
                     <div>
                       <div className="text-xs font-bold text-cyan-300 uppercase tracking-widest">Kişiye Özel Başarı Belgesi & Takvim</div>
-                      <div className="text-base sm:text-lg font-black text-white">
-                        Tebrikler, <span className="text-amber-300 underline decoration-yellow-400 font-extrabold">{studentName.trim()}</span>! 5 algoritma kilidini başarıyla çözerek bu takvimi kazandınız.
+                      <div className="text-sm sm:text-base font-black text-white">
+                        Tebrikler, <span className="text-amber-300 underline decoration-yellow-400 font-extrabold">{studentName.trim()}</span>! 5 kriptoloji kilidini başarıyla çözerek bu takvimi kazandınız.
                       </div>
                     </div>
                   </div>
                   <div className="text-xs font-black text-yellow-300 bg-amber-950/80 border border-amber-400 px-3 py-1.5 rounded-xl shadow-inner">
-                    ✨ 2027 Rehber Takvimi
+                    ✨ 2027 Dikey Takvim
                   </div>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* 3 Columns x 4 Rows Portrait Layout for Perfect Vertical Presentation */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
                 {MONTHS_2027.map((m) => (
                   <div
                     key={m.index}
-                    className={`${m.cardBg} border-2 ${m.borderColor} rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:scale-[1.03] transition-all group`}
+                    className={`${m.cardBg} border-2 ${m.borderColor} rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between shadow-xl transition-all group`}
                   >
                     <div>
                       {/* Month & Value Tag */}
-                      <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-white/20">
+                      <div className="flex items-center justify-between mb-2 pb-2 border-b border-white/20">
                         <span className="text-xs font-black uppercase tracking-wider text-amber-300 drop-shadow">
                           {m.month}
                         </span>
-                        <span className={`text-xs font-black ${m.badgeBg} border ${m.badgeBorder} ${m.badgeText} px-2.5 py-0.5 rounded-full shadow-md`}>
+                        <span className={`text-[11px] font-black ${m.badgeBg} border ${m.badgeBorder} ${m.badgeText} px-2.5 py-0.5 rounded-full shadow-md`}>
                           {m.value}
                         </span>
                       </div>
 
                       {/* Prominent Value Title */}
-                      <h3 className={`text-2xl font-black ${m.titleColor} mb-2 tracking-tight drop-shadow`}>
+                      <h3 className={`text-xl sm:text-2xl font-black ${m.titleColor} mb-1.5 tracking-tight drop-shadow`}>
                         {m.value}
                       </h3>
 
                       {/* Inspiring Value Quote */}
-                      <p className="text-xs sm:text-sm text-white font-medium italic leading-relaxed mb-3 drop-shadow-sm">
+                      <p className="text-xs sm:text-[13px] text-white font-medium italic leading-relaxed mb-2.5 drop-shadow-sm">
                         "{m.quote}"
                       </p>
 
                       {/* Monthly Wisdom Guideline */}
-                      <div className={`text-[11px] font-bold ${m.guidelineBg} border rounded-xl p-2.5 shadow-inner leading-relaxed`}>
+                      <div className={`text-[10.5px] sm:text-[11px] font-bold ${m.guidelineBg} border rounded-xl p-2 shadow-inner leading-relaxed`}>
                         <span className="font-black text-yellow-300">📌 Rehber İlke:</span> {m.guideline}
                       </div>
                     </div>
 
                     {/* Author Attribution */}
-                    <div className="pt-3 border-t border-white/20 mt-4 flex items-center justify-between text-xs">
+                    <div className="pt-2 border-t border-white/20 mt-3 flex items-center justify-between text-xs">
                       <span className="font-black text-amber-200">— {m.author}</span>
                       <span className="text-[11px] text-white/80 font-mono font-bold">2027</span>
                     </div>
@@ -1366,10 +1369,10 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Bottom Print Footer */}
-              <div className="mt-6 pt-4 border-t-2 border-indigo-500/40 flex flex-col sm:flex-row items-center justify-between text-xs text-cyan-100 font-black gap-2">
+              {/* Bottom Print Footer (Strictly No "Hazırlayan", displays owner if provided) */}
+              <div className="mt-5 pt-3.5 border-t-2 border-indigo-500/40 flex flex-col sm:flex-row items-center justify-between text-xs text-cyan-100 font-black gap-2">
                 <span>
-                  Değer Sandığı • 2027 Değerler Takvimi {studentName.trim() ? `• Hazırlayan: ${studentName.trim()}` : ''}
+                  Değer Sandığı • 2027 Değerler Takvimi {studentName.trim() ? `• Takvim Sahibi: ${studentName.trim()}` : ''}
                 </span>
                 <span className="text-yellow-300 font-black">
                   "Dürüstlük · Yardımlaşma · Saygı · Vefa · Sabır"
